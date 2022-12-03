@@ -1,0 +1,5 @@
+---
+interval: 10s
+time_series:
+  - series: up{pod="a"}
+    values: 1+0x10 _x10

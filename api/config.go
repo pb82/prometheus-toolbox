@@ -10,7 +10,7 @@ type TimeseriesConfig struct {
 
 type Config struct {
 	Interval string             `json:"interval"`
-	Series   []TimeseriesConfig `json:"series"`
+	Series   []TimeseriesConfig `json:"time_series"`
 }
 
 func FromYaml(raw []byte) (*Config, error) {
