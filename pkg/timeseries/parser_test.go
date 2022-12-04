@@ -15,6 +15,30 @@ func TestParser(t *testing.T) {
 
 	testcases := []testcase{
 		{
+			input:   "metric",
+			wantErr: false,
+			wantTimeSeries: prometheus.TimeSeries{
+				Labels: []*prometheus.Label{
+					{
+						Name:  "__name__",
+						Value: "metric",
+					},
+				},
+			},
+		},
+		{
+			input:   "{__name__=\"metric\"}",
+			wantErr: false,
+			wantTimeSeries: prometheus.TimeSeries{
+				Labels: []*prometheus.Label{
+					{
+						Name:  "__name__",
+						Value: "metric",
+					},
+				},
+			},
+		},
+		{
 			input:   "metric{label=\"value\"}",
 			wantErr: false,
 			wantTimeSeries: prometheus.TimeSeries{

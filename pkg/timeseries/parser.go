@@ -78,7 +78,11 @@ func (p *Parser) parseMetricName() error {
 		Value: nextToken.Value,
 	})
 
-	return p.parseLabelList()
+	if p.End() {
+		return nil
+	} else {
+		return p.parseLabelList()
+	}
 }
 
 func (p *Parser) Parse() error {

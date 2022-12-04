@@ -3,9 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
+	"net/url"
 	"os"
+	"path"
 	"promtoolbox/api"
 	"promtoolbox/pkg/precalculated"
+	"promtoolbox/pkg/remotewrite"
 	"promtoolbox/version"
 )
 
@@ -42,8 +46,28 @@ func main() {
 		os.Exit(1)
 	}
 
-	requets, err := precalculated.GetPrecalculatedRemoteWriteRequests(config, *batchSize)
-	fmt.Println(requets)
+	if prometheusUrl == nil || *prometheusUrl == "" {
+		fmt.Println("missing prometheus base url, make sure to set --prometheus.url")
+		os.Exit(1)
+	}
+
+	parsedPrometheusUrl, err := url.Parse(*prometheusUrl)
+	if err != nil {
+		fmt.Println(fmt.Sprintf("error parsing prometheus base url: %v", err.Error()))
+		os.Exit(1)
+	}
+	parsedPrometheusUrl.Path = path.Join(parsedPrometheusUrl.Path, "/api/v1/write")
+
+	requests, samples, err := precalculated.SchedulePrecalculatedRemoteWriteRequests(config, *batchSize)
+	log.Printf("sending %v samples in %v requests (max batch size is %v)", samples, len(requests), *batchSize)
+
+	for i, request := range requests {
+		err = remotewrite.SendWriteRequest(request, parsedPrometheusUrl)
+		if err != nil {
+			log.Fatalf("error sending batch: %v", err.Error())
+		}
+		log.Printf("successfully sent batch %v/%v", i+1, len(requests))
+	}
 }
 
 func init() {

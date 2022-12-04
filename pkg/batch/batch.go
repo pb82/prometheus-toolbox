@@ -1,68 +1,107 @@
 package batch
 
-import "go.buf.build/protocolbuffers/go/prometheus/prometheus"
+import (
+	"go.buf.build/protocolbuffers/go/prometheus/prometheus"
+)
+
+type batchSample struct {
+	series    *prometheus.TimeSeries
+	timestamp int64
+	value     float64
+}
 
 type Batch struct {
-	maxSize  int
-	samples  int
-	request  prometheus.WriteRequest
-	requests []prometheus.WriteRequest
+	samplesPerBatch int
+	batches         map[*prometheus.TimeSeries][]*prometheus.Sample
+	samples         []batchSample
+	series          map[*prometheus.TimeSeries]bool
 }
 
-func (b *Batch) full() bool {
-	return b.samples >= b.maxSize
-}
-
-func (b *Batch) reset() {
-	b.samples = 0
-	b.request = prometheus.WriteRequest{}
-}
-
-func (b *Batch) GetWriteRequests() []prometheus.WriteRequest {
-	if b.samples > 0 {
-		b.requests = append(b.requests, b.request)
-	}
-	return b.requests
-}
-
-func (b *Batch) AddSample(timeseries *prometheus.TimeSeries, value float64, timestamp int64) {
-	if b.full() {
-		b.requests = append(b.requests, b.request)
-		b.reset()
-	}
-
-	b.ensureTimeSeries(timeseries)
-	timeseries.Samples = append(timeseries.Samples, &prometheus.Sample{
-		Value:     value,
-		Timestamp: timestamp,
+// AddSample add a sample for the given time series at the given timestamp to the batch
+func (b *Batch) AddSample(ts *prometheus.TimeSeries, timestamp int64, value float64) {
+	b.samples = append(b.samples, batchSample{
+		series:    ts,
+		timestamp: timestamp,
+		value:     value,
 	})
-
-	b.samples += 1
+	b.series[ts] = true
+	/*
+		b.batches[ts] = append(b.batches[ts], &prometheus.Sample{
+			Value:     value,
+			Timestamp: timestamp,
+		})
+	*/
 }
 
-func (b *Batch) AddTimeSeries(timeseries *prometheus.TimeSeries) {
-	b.ensureTimeSeries(timeseries)
-}
+// GetWriteRequests returns the list of remote write requests required to fit all samples given a batch size
+func (b *Batch) GetWriteRequests() []*prometheus.WriteRequest {
+	numWriteRequests := len(b.samples) / b.samplesPerBatch
+	if numWriteRequests <= 0 {
+		numWriteRequests = 1
+	}
 
-func (b *Batch) findTimeSeries(timeseries *prometheus.TimeSeries) *prometheus.TimeSeries {
-	for _, targetSeries := range b.request.Timeseries {
-		if targetSeries == timeseries {
-			return timeseries
+	writeRequests := make([]*prometheus.WriteRequest, numWriteRequests)
+	i := 0
+	for i < numWriteRequests {
+		writeRequests[i] = new(prometheus.WriteRequest)
+		i += 1
+	}
+
+	requestMapping := map[*prometheus.TimeSeries][]*prometheus.TimeSeries{}
+
+	for _, writeRequest := range writeRequests {
+		for series, _ := range b.series {
+			ts := &prometheus.TimeSeries{
+				Labels:  series.Labels,
+				Samples: []*prometheus.Sample{},
+			}
+			writeRequest.Timeseries = append(writeRequest.Timeseries, ts)
+			requestMapping[series] = append(requestMapping[series], ts)
 		}
 	}
-	return nil
-}
 
-func (b *Batch) ensureTimeSeries(timeseries *prometheus.TimeSeries) {
-	if b.findTimeSeries(timeseries) == nil {
-		b.request.Timeseries = append(b.request.Timeseries, timeseries)
+	batchIndex := -1
+	for index, sample := range b.samples {
+		if index%b.samplesPerBatch == 0 {
+			batchIndex += 1
+		}
+		ts := requestMapping[sample.series][batchIndex]
+		ts.Samples = append(ts.Samples, &prometheus.Sample{
+			Value:     sample.value,
+			Timestamp: sample.timestamp,
+		})
 	}
+
+	/*
+		for timeseries, samples := range b.batches {
+			iterations := 0
+			for i := 0; i < len(samples); i += b.samplesPerBatch {
+				limit := b.samplesPerBatch
+				samplesLeft := len(samples) - (iterations * b.samplesPerBatch)
+				if limit > samplesLeft {
+					limit = samplesLeft
+				}
+				writeRequests = append(writeRequests, prometheus.WriteRequest{
+					Timeseries: []*prometheus.TimeSeries{
+						{
+							Labels:  timeseries.Labels,
+							Samples: samples[i : i+limit],
+						},
+					},
+					Metadata: nil,
+				})
+				iterations += 1
+			}
+		}
+	*/
+	return writeRequests
 }
 
 func NewBatch(size int) *Batch {
 	return &Batch{
-		maxSize: size,
-		samples: 0,
-		request: prometheus.WriteRequest{},
+		samplesPerBatch: size,
+		batches:         map[*prometheus.TimeSeries][]*prometheus.Sample{},
+		series:          map[*prometheus.TimeSeries]bool{},
+		samples:         []batchSample{},
 	}
 }

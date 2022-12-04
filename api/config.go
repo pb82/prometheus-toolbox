@@ -1,6 +1,8 @@
 package api
 
-import "github.com/ghodss/yaml"
+import (
+	"github.com/ghodss/yaml"
+)
 
 type TimeseriesConfig struct {
 	Series string `json:"series"`
