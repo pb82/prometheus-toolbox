@@ -4,11 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"go.buf.build/protocolbuffers/go/prometheus/prometheus"
-	"promtoolbox/internal"
+	"promtoolbox/pkg/parser"
 )
 
 type Parser struct {
-	internal.Parser
+	parser.Parser
 
 	Series prometheus.TimeSeries
 }
@@ -95,7 +95,7 @@ func (p *Parser) Parse() error {
 				return err
 			}
 		default:
-			return errors.New(fmt.Sprintf(internal.ErrorUnexpectedToken,
+			return errors.New(fmt.Sprintf(parser.ErrorUnexpectedToken,
 				fmt.Sprintf("%v or %v", TokenTypeLBrace, TokenTypeName),
 				p.Peek().Type))
 		}
@@ -104,9 +104,9 @@ func (p *Parser) Parse() error {
 	return nil
 }
 
-func NewParser(tokens []internal.Token) *Parser {
+func NewParser(tokens []parser.Token) *Parser {
 	return &Parser{
-		Parser: internal.Parser{
+		Parser: parser.Parser{
 			Tokens: tokens,
 		},
 		Series: prometheus.TimeSeries{},

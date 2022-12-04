@@ -4,12 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"promtoolbox/api"
-	"promtoolbox/internal"
+	"promtoolbox/pkg/parser"
 	"strconv"
 )
 
 type Parser struct {
-	internal.Parser
+	parser.Parser
 
 	Sequences api.SequenceList
 }
@@ -39,7 +39,7 @@ func (p *Parser) parseIncrement(s *api.Sequence) error {
 		factor = -1
 		p.Consume()
 	default:
-		return errors.New(fmt.Sprintf(internal.ErrorUnexpectedToken, "+ or -", nextToken.Value))
+		return errors.New(fmt.Sprintf(parser.ErrorUnexpectedToken, "+ or -", nextToken.Value))
 	}
 
 	increment, err := p.Expect(TokenTypeNumber)
@@ -98,9 +98,9 @@ func (p *Parser) ParseSequence() error {
 	return nil
 }
 
-func NewParser(tokens []internal.Token) *Parser {
+func NewParser(tokens []parser.Token) *Parser {
 	return &Parser{
-		Parser: internal.Parser{
+		Parser: parser.Parser{
 			Tokens: tokens,
 		},
 		Sequences: api.SequenceList{},

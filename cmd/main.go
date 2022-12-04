@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"promtoolbox/api"
+	"promtoolbox/pkg/precalculated"
 	"promtoolbox/version"
 )
 
@@ -41,7 +42,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println(config)
+	requets, err := precalculated.GetPrecalculatedRemoteWriteRequests(config, *batchSize)
+	fmt.Println(requets)
 }
 
 func init() {

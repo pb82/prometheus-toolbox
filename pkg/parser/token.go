@@ -1,4 +1,4 @@
-package internal
+package parser
 
 const (
 	ErrorUnexpectedToken       = "expected '%v', but got '%v'"

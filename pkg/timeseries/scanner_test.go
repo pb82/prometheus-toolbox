@@ -1,7 +1,7 @@
 package timeseries
 
 import (
-	"promtoolbox/internal"
+	"promtoolbox/pkg/parser"
 	"reflect"
 	"testing"
 )
@@ -9,13 +9,13 @@ import (
 func TestScanner(t *testing.T) {
 	type testcase struct {
 		input      string
-		wantTokens []internal.Token
+		wantTokens []parser.Token
 	}
 
 	testcases := []testcase{
 		{
 			input: "name",
-			wantTokens: []internal.Token{
+			wantTokens: []parser.Token{
 				{
 					Type:  TokenTypeName,
 					Value: "name",
@@ -24,7 +24,7 @@ func TestScanner(t *testing.T) {
 		},
 		{
 			input: "{}",
-			wantTokens: []internal.Token{
+			wantTokens: []parser.Token{
 				{
 					Type:  TokenTypeLBrace,
 					Value: "{",
@@ -37,7 +37,7 @@ func TestScanner(t *testing.T) {
 		},
 		{
 			input: "metric{label=\"value\"}",
-			wantTokens: []internal.Token{
+			wantTokens: []parser.Token{
 				{
 					Type:  TokenTypeName,
 					Value: "metric",

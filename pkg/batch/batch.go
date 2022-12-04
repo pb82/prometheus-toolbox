@@ -1,35 +1,34 @@
-package internal
+package batch
 
 import "go.buf.build/protocolbuffers/go/prometheus/prometheus"
 
 type Batch struct {
-	maxSize int
-	samples int
-	request prometheus.WriteRequest
+	maxSize  int
+	samples  int
+	request  prometheus.WriteRequest
+	requests []prometheus.WriteRequest
 }
 
-func (b *Batch) Full() bool {
+func (b *Batch) full() bool {
 	return b.samples >= b.maxSize
 }
 
-func (b *Batch) HasSamples() bool {
-	return b.samples > 0
-}
-
-func (b *Batch) Reset() {
+func (b *Batch) reset() {
 	b.samples = 0
-	for _, timeseries := range b.request.Timeseries {
-		timeseries.Samples = []*prometheus.Sample{}
+	b.request = prometheus.WriteRequest{}
+}
+
+func (b *Batch) GetWriteRequests() []prometheus.WriteRequest {
+	if b.samples > 0 {
+		b.requests = append(b.requests, b.request)
 	}
+	return b.requests
 }
 
-func (b *Batch) GetWriteRequest() *prometheus.WriteRequest {
-	return &b.request
-}
-
-func (b *Batch) AddSample(timeseries *prometheus.TimeSeries, value float64, timestamp int64) bool {
-	if b.Full() {
-		return false
+func (b *Batch) AddSample(timeseries *prometheus.TimeSeries, value float64, timestamp int64) {
+	if b.full() {
+		b.requests = append(b.requests, b.request)
+		b.reset()
 	}
 
 	b.ensureTimeSeries(timeseries)
@@ -39,7 +38,10 @@ func (b *Batch) AddSample(timeseries *prometheus.TimeSeries, value float64, time
 	})
 
 	b.samples += 1
-	return true
+}
+
+func (b *Batch) AddTimeSeries(timeseries *prometheus.TimeSeries) {
+	b.ensureTimeSeries(timeseries)
 }
 
 func (b *Batch) findTimeSeries(timeseries *prometheus.TimeSeries) *prometheus.TimeSeries {

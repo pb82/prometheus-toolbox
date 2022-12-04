@@ -1,7 +1,7 @@
 package sequence
 
 import (
-	"promtoolbox/internal"
+	"promtoolbox/pkg/parser"
 	"strings"
 	"unicode"
 )
@@ -14,7 +14,7 @@ const (
 )
 
 type Scanner struct {
-	Tokens []internal.Token
+	Tokens []parser.Token
 
 	index         int
 	runes         []rune
@@ -35,7 +35,7 @@ func (s *Scanner) next() rune {
 
 func (s *Scanner) commitName() {
 	if s.currentName.Len() > 0 {
-		s.Tokens = append(s.Tokens, internal.Token{
+		s.Tokens = append(s.Tokens, parser.Token{
 			Type:  TokenTypeName,
 			Value: s.currentName.String(),
 		})
@@ -45,7 +45,7 @@ func (s *Scanner) commitName() {
 
 func (s *Scanner) commitNumber() {
 	if s.currentNumber.Len() > 0 {
-		s.Tokens = append(s.Tokens, internal.Token{
+		s.Tokens = append(s.Tokens, parser.Token{
 			Type:  TokenTypeNumber,
 			Value: s.currentNumber.String(),
 		})
@@ -62,14 +62,14 @@ func (s *Scanner) commit() {
 	}
 }
 
-func (s *Scanner) append(t internal.TokenType, v ...string) {
+func (s *Scanner) append(t parser.TokenType, v ...string) {
 	s.commit()
 
 	var value = string(t)
 	if len(v) > 0 {
 		value = strings.Join(v, "")
 	}
-	s.Tokens = append(s.Tokens, internal.Token{
+	s.Tokens = append(s.Tokens, parser.Token{
 		Type:  t,
 		Value: value,
 	})
@@ -109,7 +109,7 @@ func (s *Scanner) Scan() {
 
 func NewScanner(source string) *Scanner {
 	return &Scanner{
-		Tokens:        []internal.Token{},
+		Tokens:        []parser.Token{},
 		index:         0,
 		runes:         []rune(source),
 		mode:          ScannerModeNumber,

@@ -1,7 +1,7 @@
 package sequence
 
 import (
-	"promtoolbox/internal"
+	"promtoolbox/pkg/parser"
 	"reflect"
 	"testing"
 )
@@ -9,13 +9,13 @@ import (
 func TestScanner(t *testing.T) {
 	type testcase struct {
 		input      string
-		wantTokens []internal.Token
+		wantTokens []parser.Token
 	}
 
 	testcases := []testcase{
 		{
 			input: "1+20x100",
-			wantTokens: []internal.Token{
+			wantTokens: []parser.Token{
 				{
 					Type:  TokenTypeNumber,
 					Value: "1",
@@ -40,7 +40,7 @@ func TestScanner(t *testing.T) {
 		},
 		{
 			input: " 1 + 2 ",
-			wantTokens: []internal.Token{
+			wantTokens: []parser.Token{
 				{
 					Type:  TokenTypeNumber,
 					Value: "1",
@@ -57,7 +57,7 @@ func TestScanner(t *testing.T) {
 		},
 		{
 			input: "(rnd)",
-			wantTokens: []internal.Token{
+			wantTokens: []parser.Token{
 				{
 					Type:  TokenTypeLParen,
 					Value: "(",
@@ -74,7 +74,7 @@ func TestScanner(t *testing.T) {
 		},
 		{
 			input: "1 + - x 2 (rnd) 4 5",
-			wantTokens: []internal.Token{
+			wantTokens: []parser.Token{
 				{
 					Type:  TokenTypeNumber,
 					Value: "1",
