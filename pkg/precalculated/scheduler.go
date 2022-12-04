@@ -2,6 +2,7 @@ package precalculated
 
 import (
 	"go.buf.build/protocolbuffers/go/prometheus/prometheus"
+	"math"
 	"promtoolbox/api"
 	sequence2 "promtoolbox/pkg/sequence"
 	"promtoolbox/pkg/timeseries"
@@ -15,16 +16,21 @@ func SchedulePrecalculatedRemoteWriteRequests(config *api.Config, batchSize int)
 		ts  *prometheus.TimeSeries
 		seq *api.SequenceList
 	}
+	var totalSamples int64
+	var generators []generator
+	var writeRequests []*prometheus.WriteRequest
+	var currentRequest *prometheus.WriteRequest
+	var scheduledSamples int64 = 0
 
 	interval, err := time.ParseDuration(config.Interval)
-	var totalSamples int64
-
 	if err != nil {
 		return nil, totalSamples, err
 	}
 
-	var generators []generator
+	// earliest sample timestamp over all series
+	var startTimestamp int64 = math.MaxInt64
 
+	// collect all timeseries from the config along with their sequences
 	for _, ts := range config.Series {
 		series, err := timeseries.ScanAndParseTimeSeries(ts.Series)
 		if err != nil {
@@ -35,7 +41,12 @@ func SchedulePrecalculatedRemoteWriteRequests(config *api.Config, batchSize int)
 		if err != nil {
 			return nil, totalSamples, err
 		}
-		sequence.AdjustTime(interval)
+
+		start := sequence.GetStartTimestamp(interval)
+		if start < startTimestamp {
+			startTimestamp = start
+		}
+
 		totalSamples += sequence.Size()
 		generators = append(generators, generator{
 			ts:  series,
@@ -43,13 +54,18 @@ func SchedulePrecalculatedRemoteWriteRequests(config *api.Config, batchSize int)
 		})
 	}
 
-	var writeRequests []*prometheus.WriteRequest
-	var currentRequest *prometheus.WriteRequest
-	var scheduledSamples int64 = 0
+	for _, g := range generators {
+		g.seq.AdjustTime(startTimestamp)
+	}
+
+	// we need to split up timeseries into batches, tsMapping maps the original timeseries
+	// to the one with the same labels in the current write request
 	tsMapping := map[*prometheus.TimeSeries]*prometheus.TimeSeries{}
 
+	// collect all samples
+	iterations := 0
 	for scheduledSamples < totalSamples {
-		if scheduledSamples%int64(batchSize) == 0 {
+		if iterations%batchSize == 0 {
 			currentRequest = new(prometheus.WriteRequest)
 			for _, g := range generators {
 				ts := &prometheus.TimeSeries{
@@ -61,16 +77,17 @@ func SchedulePrecalculatedRemoteWriteRequests(config *api.Config, batchSize int)
 			}
 			writeRequests = append(writeRequests, currentRequest)
 		}
-		scheduledSamples += 1
-		g := generators[scheduledSamples%int64(len(generators))]
-		valid, value, timestamp := g.seq.Next()
+		g := generators[iterations%len(generators)]
+		iterations += 1
+
+		valid, value, timestamp := g.seq.Next(interval)
 		if !valid {
 			continue
 		}
 		if value == nil {
 			continue
 		}
-
+		scheduledSamples += 1
 		ts := tsMapping[g.ts]
 		ts.Samples = append(ts.Samples, &prometheus.Sample{
 			Value:     *value,

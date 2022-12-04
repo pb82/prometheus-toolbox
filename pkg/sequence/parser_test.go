@@ -3,6 +3,7 @@ package sequence
 import (
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestParser(t *testing.T) {
@@ -57,7 +58,7 @@ func TestParser(t *testing.T) {
 			t.Fatalf("\nerror: %v \n case: %v", err.Error(), tc)
 		}
 
-		seq := parser.Sequences.AsIntArray()
+		seq := parser.Sequences.AsIntArray(time.Second * 1)
 		if !reflect.DeepEqual(seq, tc.wantSequence) {
 			t.Fatalf("\nwant: %v \n got: %v", tc.wantSequence, seq)
 		}

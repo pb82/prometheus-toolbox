@@ -1,11 +1,7 @@
 ---
 interval: 10s
 time_series:
-  - series: down{pod="b"}
+  - series: a{pod="a"}
     values: 1+0x1000
-  - series: up{pod="a"}
-    values: 1+1x1000
-  - series: left{pod="c"}
-    values: 1+2x1000
-  - series: right{pod="d"}
-    values: 1+3x1000
+  - series: b{pod="b"}
+    values: 1+1x500

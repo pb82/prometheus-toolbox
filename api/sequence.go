@@ -14,7 +14,6 @@ type SequenceList struct {
 	sequences      []Sequence
 	startTimestamp int64
 	timesAlready   int64
-	interval       time.Duration
 }
 
 func (s *Sequence) Next() (bool, *float64) {
@@ -31,25 +30,25 @@ func (s *Sequence) Size() int64 {
 	return s.Times
 }
 
-func (s *SequenceList) Next() (bool, *float64, int64) {
+func (s *SequenceList) Next(interval time.Duration) (bool, *float64, int64) {
 	if s.index >= len(s.sequences) {
 		return false, nil, 0
 	}
 	valid, next := s.sequences[s.index].Next()
 	if !valid {
 		s.index += 1
-		return s.Next()
+		return s.Next(interval)
 	}
 
-	ts := s.startTimestamp + (s.timesAlready * s.interval.Milliseconds())
+	ts := s.startTimestamp + (s.timesAlready * interval.Milliseconds())
 	s.timesAlready += 1
 	return true, next, ts
 }
 
-func (s *SequenceList) AsIntArray() []int {
+func (s *SequenceList) AsIntArray(interval time.Duration) []int {
 	var result []int
 	for true {
-		valid, next, _ := s.Next()
+		valid, next, _ := s.Next(interval)
 		if !valid {
 			break
 		}
@@ -67,10 +66,13 @@ func (s *SequenceList) Size() int64 {
 	return size
 }
 
-// AdjustTime rewind the clock so that the series goes back far enough to fit all samples
-func (s *SequenceList) AdjustTime(interval time.Duration) {
-	s.interval = interval
-	s.startTimestamp = time.Now().UnixMilli() - (s.Size() * interval.Milliseconds())
+func (s *SequenceList) GetStartTimestamp(interval time.Duration) int64 {
+	return time.Now().UnixMilli() - (s.Size() * interval.Milliseconds())
+}
+
+// AdjustTime set the clock to the given timestamp
+func (s *SequenceList) AdjustTime(timestamp int64) {
+	s.startTimestamp = timestamp
 }
 
 // Append append a new sequence to the list
