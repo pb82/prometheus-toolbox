@@ -20,7 +20,7 @@ Generates data and sends it to a Prometheus instance using the [remote write](ht
 Provide the base URL of the Prometheus instance and a config file, for example:
 
 ```shell
-`$ cat example/config.yaml`
+$ cat example/config.yaml
 ---
 interval: 10s
 time_series:
@@ -34,9 +34,11 @@ time_series:
 
 Run the CLI with the following options:
 
-`$ ./prometheus-toolbox --prometheus.url=http://localhost:9090 --config.file=./example/config.yml`
+```shell
+$ ./prometheus-toolbox --prometheus.url=http://localhost:9090 --config.file=./example/config.yml
+```
 
-Open the Prometheus UI and run a query, e.g. `{__name__~="metric_a|metric_b""}` or go to the graph view.
+Open the Prometheus UI and run a query like `{__name__~="metric_a|metric_b""}`, or go to the graph view.
 Samples for both time series should be visible.
 
 ### How the samples are generated
