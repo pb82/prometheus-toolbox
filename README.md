@@ -7,6 +7,21 @@ Use the included Makefile to start a local instance on port `9090`:
 $ make prom
 ```
 
+To build the CLI, run:
+
+```shell
+$ make build
+```
+
+# Flags
+
+The following flags are accepted:
+
+* `--version` Print version and exit
+* `--prometheus.url` Prometheus base url
+* `--config.file` Config file location
+* `--batch.size` Samples per remote write request, defaults to 500
+
 # Features
 
 This is a work in progress, additional features for testing and debugging Queries and Alerts will be added.
@@ -46,3 +61,6 @@ Samples for both time series should be visible.
 Samples are always generated for the past. The time series that produces the most samples (in the above example it is `metrics_a`) determines how far back in time the samples go.
 In the above case 100 samples are generated with an interval of ten seconds between them.
 So both series will start at a point in time 1000 seconds in the past.
+
+Samples are batched to avoid sending one huge remote write request.
+The default batch size is 500.
