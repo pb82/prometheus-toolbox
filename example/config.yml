@@ -2,6 +2,6 @@
 interval: 10s
 time_series:
   - series: a{pod="a"}
-    values: 1+0x1000
+    values: 1+0x100
   - series: b{pod="b"}
-    values: 1+1x500
+    values: 1+1x50
