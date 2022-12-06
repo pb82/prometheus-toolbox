@@ -12,6 +12,7 @@ type Parser struct {
 	parser.Parser
 
 	Sequences api.SequenceList
+	Stream    api.Stream
 }
 
 func (p *Parser) parseInitial(s *api.Sequence) error {
@@ -112,6 +113,43 @@ func (p *Parser) parseValueSequence() (*api.Sequence, error) {
 	return sequence, nil
 }
 
+func (p *Parser) ParseStream() error {
+	initial, err := p.Expect(TokenTypeNumber)
+	if err != nil {
+		return err
+	}
+	initialValue, err := strconv.ParseFloat(initial.Value, 64)
+	if err != nil {
+		return err
+	}
+	p.Stream.Initial = initialValue
+
+	var factor float64
+	nextToken := p.Peek()
+	switch nextToken.Type {
+	case TokenTypePlus:
+		factor = 1
+		p.Consume()
+	case TokenTypeMinus:
+		factor = -1
+		p.Consume()
+	default:
+		return errors.New(fmt.Sprintf(parser.ErrorUnexpectedToken, "+ or -", nextToken.Value))
+	}
+
+	increment, err := p.Expect(TokenTypeNumber)
+	if err != nil {
+		return err
+	}
+
+	incrementValue, err := strconv.ParseFloat(increment.Value, 64)
+	if err != nil {
+		return err
+	}
+	p.Stream.Increment = incrementValue * factor
+	return nil
+}
+
 func (p *Parser) ParseSequence() error {
 	for !p.End() {
 		if p.Peek().Type == TokenTypeUnderscore {
@@ -139,5 +177,6 @@ func NewParser(tokens []parser.Token) *Parser {
 			Tokens: tokens,
 		},
 		Sequences: api.SequenceList{},
+		Stream:    api.Stream{},
 	}
 }

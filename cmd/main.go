@@ -6,11 +6,15 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"os/signal"
 	"path"
 	"promtoolbox/api"
 	"promtoolbox/pkg/precalculated"
 	"promtoolbox/pkg/remotewrite"
+	"promtoolbox/pkg/stream"
 	"promtoolbox/version"
+	"sync"
+	"syscall"
 )
 
 const (
@@ -67,6 +71,31 @@ func main() {
 			log.Fatalf("error sending batch: %v", err.Error())
 		}
 		log.Printf("successfully sent batch %v/%v", i+1, len(requests))
+	}
+
+	log.Printf("done sending precalculated series")
+
+	wg := &sync.WaitGroup{}
+	stop := make(chan bool)
+	sigs := make(chan os.Signal)
+	signal.Notify(sigs, syscall.SIGTERM, syscall.SIGABRT, syscall.SIGINT)
+	go func() {
+		sig := <-sigs
+		switch sig {
+		case syscall.SIGTERM, syscall.SIGABRT, syscall.SIGINT:
+			log.Println("stop signal received")
+			close(stop)
+		}
+	}()
+
+	count, err := stream.StartStreamWriters(config, parsedPrometheusUrl, wg, stop)
+	if err != nil {
+		log.Fatalf("error starting stream writer: %v", err.Error())
+	}
+	if count > 0 {
+		wg.Wait()
+	} else {
+		close(stop)
 	}
 }
 

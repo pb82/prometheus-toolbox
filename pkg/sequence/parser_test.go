@@ -79,3 +79,52 @@ func TestParser(t *testing.T) {
 		}
 	}
 }
+
+func TestStreamParser(t *testing.T) {
+	type testcase struct {
+		input    string
+		wantErr  bool
+		firstTen []int64
+	}
+
+	testcases := []testcase{
+		{
+			input:    "0+1",
+			wantErr:  false,
+			firstTen: []int64{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
+		},
+		{
+			input:   "0+",
+			wantErr: true,
+		},
+		{
+			input:   "+1",
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testcases {
+		scanner := NewScanner(tc.input)
+		scanner.Scan()
+
+		parser := NewParser(scanner.Tokens)
+		err := parser.ParseStream()
+		if err != nil && !tc.wantErr {
+			t.Fatalf("\nerror: %v \n case: %v", err.Error(), tc)
+		}
+
+		if !tc.wantErr {
+			s := &parser.Stream
+			var streamValues []int64
+			i := 0
+			for i < 10 {
+				streamValues = append(streamValues, int64(s.Next()))
+				i += 1
+			}
+
+			if !reflect.DeepEqual(streamValues, tc.firstTen) {
+				t.Fatalf("\nwant: %v \n got: %v", tc.firstTen, streamValues)
+			}
+		}
+	}
+}
