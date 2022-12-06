@@ -50,10 +50,10 @@ time_series:
 Run the CLI with the following options:
 
 ```shell
-$ ./prometheus-toolbox --prometheus.url=http://localhost:9090 --config.file=./example/config.yml
+$ ./promtoolbox --prometheus.url=http://localhost:9090 --config.file=./example/config.yml
 ```
 
-Open the Prometheus UI and run a query like `{__name__~="metric_a|metric_b""}`, or go to the graph view.
+Open the Prometheus UI and run a query like `{__name__~="metric_a|metric_b"}`, or go to the graph view.
 Samples for both time series should be visible.
 
 ### How the samples are generated
@@ -64,3 +64,20 @@ So both series will start at a point in time 1000 seconds in the past.
 
 Samples are batched to avoid sending one huge remote write request.
 The default batch size is 500.
+
+## Streaming samples
+
+You can stream continuous samples for series to a Prometheus instances:
+
+```shell
+$ cat example/config.yaml
+---
+interval: 10s
+time_series:
+  - series: up{label="a"}
+    stream: 1+0
+```
+
+This will send a sample generated from the field `stream` every ten seconds.
+
+**NOTE:** in contrast to `values`, when providing `stream` you can't specify the number of samples. Data is generated continuously.

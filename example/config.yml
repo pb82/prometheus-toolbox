@@ -1,6 +1,6 @@
 ---
-interval: 30s
+interval: 5s
 time_series:
-  - series: up{pod="b"}
-    values: 1+1x30
-    stream: 25+1
+  - series: up{pod="a"}
+    values: 1+0x300
+    stream: 1+0
