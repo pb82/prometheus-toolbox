@@ -14,6 +14,24 @@ func TestScanner(t *testing.T) {
 
 	testcases := []testcase{
 		{
+			input: "_x10",
+			wantTokens: []parser.Token{
+				{
+					Type:  TokenTypeUnderscore,
+					Value: "_",
+				},
+				{
+					Type:  TokenTypeX,
+					Value: "x",
+				},
+				{
+					Type:  TokenTypeNumber,
+					Value: "10",
+				},
+			},
+		},
+		{
+
 			input: "1+20x100",
 			wantTokens: []parser.Token{
 				{

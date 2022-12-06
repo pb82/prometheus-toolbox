@@ -84,10 +84,11 @@ func SchedulePrecalculatedRemoteWriteRequests(config *api.Config, batchSize int)
 		if !valid {
 			continue
 		}
+
+		scheduledSamples += 1
 		if value == nil {
 			continue
 		}
-		scheduledSamples += 1
 		ts := tsMapping[g.ts]
 		ts.Samples = append(ts.Samples, &prometheus.Sample{
 			Value:     *value,

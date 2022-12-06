@@ -3,6 +3,7 @@ package api
 import "time"
 
 type Sequence struct {
+	Null         bool
 	Initial      float64
 	Increment    float64
 	Times        int64
@@ -11,19 +12,22 @@ type Sequence struct {
 
 type SequenceList struct {
 	index          int
-	sequences      []Sequence
+	sequences      []*Sequence
 	startTimestamp int64
 	timesAlready   int64
 }
 
 func (s *Sequence) Next() (bool, *float64) {
+	var result *float64 = nil
 	if s.TimesAlready >= s.Times {
 		return false, nil
 	}
-
-	nextValue := s.Initial + (float64(s.TimesAlready) * s.Increment)
+	if !s.Null {
+		nextValue := s.Initial + (float64(s.TimesAlready) * s.Increment)
+		result = &nextValue
+	}
 	s.TimesAlready += 1
-	return true, &nextValue
+	return true, result
 }
 
 func (s *Sequence) Size() int64 {
@@ -47,10 +51,14 @@ func (s *SequenceList) Next(interval time.Duration) (bool, *float64, int64) {
 
 func (s *SequenceList) AsIntArray(interval time.Duration) []int {
 	var result []int
+
 	for true {
 		valid, next, _ := s.Next(interval)
 		if !valid {
 			break
+		}
+		if next == nil {
+			continue
 		}
 		result = append(result, int(*next))
 	}
@@ -76,6 +84,6 @@ func (s *SequenceList) AdjustTime(timestamp int64) {
 }
 
 // Append append a new sequence to the list
-func (s *SequenceList) Append(sequence Sequence) {
+func (s *SequenceList) Append(sequence *Sequence) {
 	s.sequences = append(s.sequences, sequence)
 }

@@ -95,6 +95,8 @@ func (s *Scanner) Scan() {
 			s.append(TokenTypeLParen)
 		case ')':
 			s.append(TokenTypeRParen)
+		case '_':
+			s.append(TokenTypeUnderscore)
 		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.':
 			s.currentNumber.WriteRune(nextRune)
 			s.mode = ScannerModeNumber

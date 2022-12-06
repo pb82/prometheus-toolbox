@@ -15,6 +15,21 @@ func TestParser(t *testing.T) {
 
 	testcases := []testcase{
 		{
+			input:        "_x10",
+			wantErr:      false,
+			wantSequence: nil,
+		},
+		{
+			input:        "1+0x2 _x10 2+0x2",
+			wantErr:      false,
+			wantSequence: []int{1, 1, 2, 2},
+		},
+		{
+			input:        "_x10 1+0x2 _x10 2+0x2 _x10 3+0x2",
+			wantErr:      false,
+			wantSequence: []int{1, 1, 2, 2, 3, 3},
+		},
+		{
 			input:        "0+1x10",
 			wantErr:      false,
 			wantSequence: []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},

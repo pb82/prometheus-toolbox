@@ -74,26 +74,61 @@ func (p *Parser) parseTimes(s *api.Sequence) error {
 	return nil
 }
 
+func (p *Parser) parseNullSequence() (*api.Sequence, error) {
+	sequence := &api.Sequence{
+		Null: true,
+	}
+	_, err := p.Expect(TokenTypeUnderscore)
+	if err != nil {
+		return nil, err
+	}
+
+	err = p.parseTimes(sequence)
+	if err != nil {
+		return nil, err
+	}
+
+	return sequence, nil
+}
+
+func (p *Parser) parseValueSequence() (*api.Sequence, error) {
+	sequence := &api.Sequence{}
+
+	err := p.parseInitial(sequence)
+	if err != nil {
+		return nil, err
+	}
+
+	err = p.parseIncrement(sequence)
+	if err != nil {
+		return nil, err
+	}
+
+	err = p.parseTimes(sequence)
+	if err != nil {
+		return nil, err
+	}
+
+	return sequence, nil
+}
+
 func (p *Parser) ParseSequence() error {
 	for !p.End() {
-		sequence := api.Sequence{}
+		if p.Peek().Type == TokenTypeUnderscore {
+			sequence, err := p.parseNullSequence()
+			if err != nil {
+				return err
+			}
 
-		err := p.parseInitial(&sequence)
-		if err != nil {
-			return err
+			p.Sequences.Append(sequence)
+		} else {
+			sequence, err := p.parseValueSequence()
+			if err != nil {
+				return err
+			}
+
+			p.Sequences.Append(sequence)
 		}
-
-		err = p.parseIncrement(&sequence)
-		if err != nil {
-			return err
-		}
-
-		err = p.parseTimes(&sequence)
-		if err != nil {
-			return err
-		}
-
-		p.Sequences.Append(sequence)
 	}
 	return nil
 }

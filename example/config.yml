@@ -1,7 +1,7 @@
 ---
-interval: 10s
+interval: 30s
 time_series:
-  - series: a{pod="a"}
-    values: 1+0x100
-  - series: b{pod="b"}
-    values: 1+1x50
+  - series: up{pod="a"}
+    values: 1+0x10 _x10 1+0x10
+  - series: up{pod="b"}
+    values: 1+1x30
