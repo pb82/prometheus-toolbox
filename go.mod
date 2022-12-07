@@ -1,4 +1,4 @@
-module prometheus-toolbox
+module github.com/pb82/prometheus-toolbox
 
 require github.com/ghodss/yaml v1.0.0
 

@@ -1,7 +1,7 @@
 package sequence
 
 import (
-	"prometheus-toolbox/pkg/parser"
+	"github.com/pb82/prometheus-toolbox/pkg/parser"
 )
 
 const (
