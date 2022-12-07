@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	DefaultConfigFile = "./example/config.yml"
+	DefaultConfigFile = "./config.yml"
 	DefaultBatchSize  = 500
 )
 
