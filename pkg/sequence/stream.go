@@ -1,6 +1,6 @@
 package sequence
 
-import "promtoolbox/api"
+import "prometheus-toolbox/api"
 
 func ScanAndParseStream(source string) (*api.Stream, error) {
 	scanner := NewScanner(source)

@@ -3,9 +3,9 @@ package precalculated
 import (
 	"go.buf.build/protocolbuffers/go/prometheus/prometheus"
 	"math"
-	"promtoolbox/api"
-	sequence2 "promtoolbox/pkg/sequence"
-	"promtoolbox/pkg/timeseries"
+	"prometheus-toolbox/api"
+	sequence2 "prometheus-toolbox/pkg/sequence"
+	"prometheus-toolbox/pkg/timeseries"
 	"time"
 )
 

@@ -1,7 +1,7 @@
 package sequence
 
 import (
-	"promtoolbox/pkg/parser"
+	"prometheus-toolbox/pkg/parser"
 	"strings"
 	"unicode"
 )

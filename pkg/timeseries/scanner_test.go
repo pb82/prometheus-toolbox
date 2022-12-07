@@ -1,7 +1,7 @@
 package timeseries
 
 import (
-	"promtoolbox/pkg/parser"
+	"prometheus-toolbox/pkg/parser"
 	"reflect"
 	"testing"
 )

@@ -1,7 +1,7 @@
 package sequence
 
 import (
-	"promtoolbox/api"
+	"prometheus-toolbox/api"
 )
 
 func ScanAndParseSequence(source string) (*api.SequenceList, error) {

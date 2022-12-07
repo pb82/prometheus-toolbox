@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"go.buf.build/protocolbuffers/go/prometheus/prometheus"
-	"promtoolbox/pkg/parser"
+	"prometheus-toolbox/pkg/parser"
 )
 
 type Parser struct {

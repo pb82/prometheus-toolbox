@@ -10,7 +10,7 @@ $ make prom
 To build the CLI, run:
 
 ```shell
-$ make build
+$ go build
 ```
 
 # Flags
@@ -50,7 +50,7 @@ time_series:
 Run the CLI with the following options:
 
 ```shell
-$ ./promtoolbox --prometheus.url=http://localhost:9090 --config.file=./example/config.yml
+$ ./prometheus-toolbox --prometheus.url=http://localhost:9090 --config.file=./example/config.yml
 ```
 
 Open the Prometheus UI and run a query like `{__name__~="metric_a|metric_b"}`, or go to the graph view.
@@ -81,3 +81,5 @@ time_series:
 This will send a sample generated from the field `stream` every ten seconds.
 
 **NOTE:** in contrast to `values`, when providing `stream` you can't specify the number of samples. Data is generated continuously.
+
+**NOTE:** you can have both, `values` and `stream`.

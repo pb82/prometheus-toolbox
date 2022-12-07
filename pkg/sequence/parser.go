@@ -3,8 +3,8 @@ package sequence
 import (
 	"errors"
 	"fmt"
-	"promtoolbox/api"
-	"promtoolbox/pkg/parser"
+	"prometheus-toolbox/api"
+	"prometheus-toolbox/pkg/parser"
 	"strconv"
 )
 
