@@ -1,7 +1,7 @@
 # Prometheus Toolbox
 
 A CLI tool to generate metrics data for the [Prometheus](https://prometheus.io/) monitorig system.
-It allows you to define time series and values and send them directly to a Prometheus instance using the remote write protocol.
+It allows you to define time series and values and send them directly to Prometheus using the remote write protocol.
 
 ## Why?
 
@@ -72,8 +72,6 @@ stream: 1+1 # <initial>(plus or minus)<increment>
 ```
 
 Streaming realtime samples only ends when the user interrupts the program, thus no number of samples is needed.
-
-The samples form
 
 # Features
 
