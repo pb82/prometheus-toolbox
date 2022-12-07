@@ -1,30 +1,85 @@
 # Prometheus Toolbox
 
-A CLI tool to interact with the [Prometheus](https://prometheus.io/) monitorig system.
-Use the included Makefile to start a local instance on port `9090`:
+A CLI tool to generate metrics data for the [Prometheus](https://prometheus.io/) monitorig system.
+It allows you to define time series and values and send them directly to a Prometheus instance using the remote write protocol.
+
+## Why?
+
+I found this very useful for testing PromQL queries and alerts.
+Sometimes you don't have the right data in Prometheus or simply no access. 
+This tool let's you simulate the data you need and test your queries against it.
+
+## Installation
+
+`GOPROXY=direct go install github.com/pb82/prometheus-toolbox@latest`
+
+## Starting a local Prometheus instance
+
+You can use the included Makefile target:
 
 ```shell
 $ make prom
 ```
 
-To build the CLI, run:
+or directly with docker:
 
-```shell
-$ go build
+Create `prometheus.yml`:
+
+```yaml
+global:
+  scrape_interval: 10s
+  evaluation_interval: 30s
 ```
+
+then run the container:
+
+`docker run -p 9090:9090 --network=host -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus --web.enable-remote-write-receiver --config.file=/etc/prometheus/prometheus.yml`
 
 # Flags
 
 The following flags are accepted:
 
+* `--help` Print help and exit
 * `--version` Print version and exit
 * `--prometheus.url` Prometheus base url
 * `--config.file` Config file location
 * `--batch.size` Samples per remote write request, defaults to 500
 
+# Config file format
+
+This tool reads from a config file where the simulated time series and values are defined.
+The format is:
+
+```yaml
+interval: "10s"                   # Interval between samples, in this case 10 seconds
+time_series:                      # List of time series to simulate
+  - series: metric_a{label="a"}   # Time series (metric name and label list)
+    values: 1+1x100               # Precalculated samples
+  - series: metric_a{label="a"}   # Another time series
+    stream: 1+0                   # Realtime samples
+```
+
+The format for precalculated samples is:
+
+```
+values: 1+1x100 # <initial>(plus or minus)<increment>x<how many samples>
+```
+
+The format for realtime samples is:
+
+```
+stream: 1+1 # <initial>(plus or minus)<increment>
+```
+
+Streaming realtime samples only ends when the user interrupts the program, thus no number of samples is needed.
+
+The samples form
+
 # Features
 
-This is a work in progress, additional features for testing and debugging Queries and Alerts will be added.
+[Data generator](#data-generator): write precalculated samples.
+
+[Streaming samples](#streaming-samples): write realtime data.
 
 ## Data generator
 
@@ -35,7 +90,7 @@ Generates data and sends it to a Prometheus instance using the [remote write](ht
 Provide the base URL of the Prometheus instance and a config file, for example:
 
 ```shell
-$ cat example/config.yaml
+$ cat config.yaml
 ---
 interval: 10s
 time_series:
@@ -50,7 +105,7 @@ time_series:
 Run the CLI with the following options:
 
 ```shell
-$ ./prometheus-toolbox --prometheus.url=http://localhost:9090 --config.file=./example/config.yml
+$ ./prometheus-toolbox --prometheus.url=http://localhost:9090 --config.file=./config.yml
 ```
 
 Open the Prometheus UI and run a query like `{__name__~="metric_a|metric_b"}`, or go to the graph view.
@@ -82,4 +137,4 @@ This will send a sample generated from the field `stream` every ten seconds.
 
 **NOTE:** in contrast to `values`, when providing `stream` you can't specify the number of samples. Data is generated continuously.
 
-**NOTE:** you can have both, `values` and `stream`.
+**NOTE:** you can have both, `values` and `stream` for the same series.
