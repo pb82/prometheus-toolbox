@@ -2,13 +2,13 @@ package stream
 
 import (
 	"fmt"
-	"go.buf.build/protocolbuffers/go/prometheus/prometheus"
-	"log"
-	"net/url"
 	"github.com/pb82/prometheus-toolbox/api"
 	"github.com/pb82/prometheus-toolbox/pkg/remotewrite"
 	"github.com/pb82/prometheus-toolbox/pkg/sequence"
 	"github.com/pb82/prometheus-toolbox/pkg/timeseries"
+	"go.buf.build/protocolbuffers/go/prometheus/prometheus"
+	"log"
+	"net/url"
 	"sync"
 	"time"
 )
@@ -21,7 +21,7 @@ func StartStreamWriters(config *api.Config, prometheusUrl *url.URL, wg *sync.Wai
 	}
 
 	for _, ts := range config.Series {
-		if ts.Stream == "" {
+		if ts.Stream == "" || ts.Series == "" {
 			continue
 		}
 

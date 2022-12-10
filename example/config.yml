@@ -2,5 +2,7 @@
 interval: 5s
 time_series:
   - series: up{pod="a"}
-    values: 1+0x300
+    values: 1+0x700
+  - series: up{pod="b"}
     stream: 1+0
+

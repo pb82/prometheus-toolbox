@@ -1,11 +1,11 @@
 package precalculated
 
 import (
-	"go.buf.build/protocolbuffers/go/prometheus/prometheus"
-	"math"
 	"github.com/pb82/prometheus-toolbox/api"
 	sequence2 "github.com/pb82/prometheus-toolbox/pkg/sequence"
 	"github.com/pb82/prometheus-toolbox/pkg/timeseries"
+	"go.buf.build/protocolbuffers/go/prometheus/prometheus"
+	"math"
 	"time"
 )
 
@@ -32,6 +32,10 @@ func SchedulePrecalculatedRemoteWriteRequests(config *api.Config, batchSize int)
 
 	// collect all timeseries from the config along with their sequences
 	for _, ts := range config.Series {
+		if ts.Series == "" || ts.Values == "" {
+			continue
+		}
+
 		series, err := timeseries.ScanAndParseTimeSeries(ts.Series)
 		if err != nil {
 			return nil, totalSamples, err

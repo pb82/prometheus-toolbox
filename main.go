@@ -63,17 +63,24 @@ func main() {
 	parsedPrometheusUrl.Path = path.Join(parsedPrometheusUrl.Path, "/api/v1/write")
 
 	requests, samples, err := precalculated.SchedulePrecalculatedRemoteWriteRequests(config, *batchSize)
-	log.Printf("sending %v samples in %v requests (max batch size is %v)", samples, len(requests), *batchSize)
-
-	for i, request := range requests {
-		err = remotewrite.SendWriteRequest(request, parsedPrometheusUrl)
-		if err != nil {
-			log.Fatalf("error sending batch: %v", err.Error())
-		}
-		log.Printf("successfully sent batch %v/%v", i+1, len(requests))
+	if err != nil {
+		fmt.Println(fmt.Sprintf("error sending samples: %v", err.Error()))
+		os.Exit(1)
 	}
 
-	log.Printf("done sending precalculated series")
+	if len(requests) > 0 {
+		log.Printf("sending %v samples in %v requests (max batch size is %v)", samples, len(requests), *batchSize)
+
+		for i, request := range requests {
+			err = remotewrite.SendWriteRequest(request, parsedPrometheusUrl)
+			if err != nil {
+				log.Fatalf("error sending batch: %v", err.Error())
+			}
+			log.Printf("successfully sent batch %v/%v", i+1, len(requests))
+		}
+
+		log.Printf("done sending precalculated series")
+	}
 
 	wg := &sync.WaitGroup{}
 	stop := make(chan bool)
