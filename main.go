@@ -80,6 +80,8 @@ func main() {
 		}
 
 		log.Printf("done sending precalculated series")
+	} else {
+		log.Println("no precalculated series")
 	}
 
 	wg := &sync.WaitGroup{}
@@ -102,6 +104,7 @@ func main() {
 	if count > 0 {
 		wg.Wait()
 	} else {
+		log.Println("no streams")
 		close(stop)
 	}
 }
