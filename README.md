@@ -11,7 +11,13 @@ This tool let's you simulate the data you need and test your queries against it.
 
 ## Installation
 
+The latest version:
+
 `GOPROXY=direct go install github.com/pb82/prometheus-toolbox@latest`
+
+A specific version:
+
+`GOPROXY=direct go install github.com/pb82/prometheus-toolbox@<version>`
 
 ## Starting a local Prometheus instance
 
