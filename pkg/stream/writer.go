@@ -21,6 +21,7 @@ func StartStreamWriters(config *api.Config, prometheusUrl *url.URL, wg *sync.Wai
 	}
 
 	for _, ts := range config.Series {
+		ts := ts
 		if ts.Stream == "" || ts.Series == "" {
 			continue
 		}
@@ -45,14 +46,14 @@ func StartStreamWriters(config *api.Config, prometheusUrl *url.URL, wg *sync.Wai
 					return
 				case <-time.After(interval):
 					nextValue := stream.Next()
-					timeseries := prometheus.TimeSeries{}
-					timeseries.Labels = series.Labels
-					timeseries.Samples = append(timeseries.Samples, &prometheus.Sample{
+					sendSeries := prometheus.TimeSeries{}
+					sendSeries.Labels = series.Labels
+					sendSeries.Samples = append(sendSeries.Samples, &prometheus.Sample{
 						Value:     nextValue,
 						Timestamp: time.Now().UnixMilli(),
 					})
 					wr := &prometheus.WriteRequest{}
-					wr.Timeseries = append(wr.Timeseries, &timeseries)
+					wr.Timeseries = append(wr.Timeseries, &sendSeries)
 					log.Println(fmt.Sprintf("sending sample for timeseries %v: %v", ts.Series, nextValue))
 					err := remotewrite.SendWriteRequest(wr, prometheusUrl)
 					if err != nil {
