@@ -7,9 +7,9 @@ func ScanAndParseStream(source string) (*api.Stream, error) {
 	scanner.Scan()
 
 	parser := NewParser(scanner.Tokens)
-	err := parser.ParseStream()
+	stream, err := parser.ParseStream()
 	if err != nil {
 		return nil, err
 	}
-	return &parser.Stream, nil
+	return stream, nil
 }

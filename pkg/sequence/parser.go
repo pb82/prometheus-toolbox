@@ -10,9 +10,6 @@ import (
 
 type Parser struct {
 	parser.Parser
-
-	Sequences api.SequenceList
-	Stream    api.Stream
 }
 
 func (p *Parser) parseInitial(s *api.Sequence) error {
@@ -113,16 +110,17 @@ func (p *Parser) parseValueSequence() (*api.Sequence, error) {
 	return sequence, nil
 }
 
-func (p *Parser) ParseStream() error {
+func (p *Parser) ParseStream() (*api.Stream, error) {
+	stream := &api.Stream{}
 	initial, err := p.Expect(TokenTypeNumber)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	initialValue, err := strconv.ParseFloat(initial.Value, 64)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	p.Stream.Initial = initialValue
+	stream.Initial = initialValue
 
 	var factor float64
 	nextToken := p.Peek()
@@ -134,41 +132,42 @@ func (p *Parser) ParseStream() error {
 		factor = -1
 		p.Consume()
 	default:
-		return errors.New(fmt.Sprintf(parser.ErrorUnexpectedToken, "+ or -", nextToken.Value))
+		return nil, errors.New(fmt.Sprintf(parser.ErrorUnexpectedToken, "+ or -", nextToken.Value))
 	}
 
 	increment, err := p.Expect(TokenTypeNumber)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	incrementValue, err := strconv.ParseFloat(increment.Value, 64)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	p.Stream.Increment = incrementValue * factor
-	return nil
+	stream.Increment = incrementValue * factor
+	return stream, nil
 }
 
-func (p *Parser) ParseSequence() error {
+func (p *Parser) ParseSequence() (*api.SequenceList, error) {
+	sequences := &api.SequenceList{}
 	for !p.End() {
 		if p.Peek().Type == TokenTypeUnderscore {
 			sequence, err := p.parseNullSequence()
 			if err != nil {
-				return err
+				return nil, err
 			}
 
-			p.Sequences.Append(sequence)
+			sequences.Append(sequence)
 		} else {
 			sequence, err := p.parseValueSequence()
 			if err != nil {
-				return err
+				return nil, err
 			}
 
-			p.Sequences.Append(sequence)
+			sequences.Append(sequence)
 		}
 	}
-	return nil
+	return sequences, nil
 }
 
 func NewParser(tokens []parser.Token) *Parser {
@@ -176,7 +175,5 @@ func NewParser(tokens []parser.Token) *Parser {
 		Parser: parser.Parser{
 			Tokens: tokens,
 		},
-		Sequences: api.SequenceList{},
-		Stream:    api.Stream{},
 	}
 }
