@@ -90,15 +90,12 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGPIPE, syscall.SIGABRT)
 	defer stop()
 
-	count, err := stream.StartStreamWriters(ctx, config, parsedPrometheusUrl, wg)
+	err = stream.StartStreamWriters(ctx, config, parsedPrometheusUrl, wg)
 	if err != nil {
 		log.Fatalf("error starting stream writer: %v", err.Error())
 	}
-	if count > 0 {
-		wg.Wait()
-	} else {
-		log.Println("no streams")
-	}
+
+	wg.Wait()
 }
 
 func init() {

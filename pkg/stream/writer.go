@@ -14,11 +14,10 @@ import (
 	"time"
 )
 
-func StartStreamWriters(ctx context.Context, config *api.Config, prometheusUrl *url.URL, wg *sync.WaitGroup) (int, error) {
-	count := 0
+func StartStreamWriters(ctx context.Context, config *api.Config, prometheusUrl *url.URL, wg *sync.WaitGroup) error {
 	interval, err := time.ParseDuration(config.Interval)
 	if err != nil {
-		return count, err
+		return err
 	}
 
 	for _, ts := range config.Series {
@@ -29,16 +28,15 @@ func StartStreamWriters(ctx context.Context, config *api.Config, prometheusUrl *
 
 		series, err := timeseries.ScanAndParseTimeSeries(ts.Series)
 		if err != nil {
-			return count, err
+			return err
 		}
 
 		stream, err := sequence.ScanAndParseStream(ts.Stream)
 		if err != nil {
-			return count, err
+			return err
 		}
 
 		wg.Add(1)
-		count += 1
 		go func() {
 			for {
 				select {
@@ -65,5 +63,5 @@ func StartStreamWriters(ctx context.Context, config *api.Config, prometheusUrl *
 			}
 		}()
 	}
-	return count, nil
+	return nil
 }
