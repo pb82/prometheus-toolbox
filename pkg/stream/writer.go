@@ -1,6 +1,7 @@
 package stream
 
 import (
+	"context"
 	"fmt"
 	"github.com/pb82/prometheus-toolbox/api"
 	"github.com/pb82/prometheus-toolbox/pkg/remotewrite"
@@ -13,7 +14,7 @@ import (
 	"time"
 )
 
-func StartStreamWriters(config *api.Config, prometheusUrl *url.URL, wg *sync.WaitGroup, stop <-chan bool) (int, error) {
+func StartStreamWriters(ctx context.Context, config *api.Config, prometheusUrl *url.URL, wg *sync.WaitGroup) (int, error) {
 	count := 0
 	interval, err := time.ParseDuration(config.Interval)
 	if err != nil {
@@ -41,7 +42,8 @@ func StartStreamWriters(config *api.Config, prometheusUrl *url.URL, wg *sync.Wai
 		go func() {
 			for {
 				select {
-				case _ = <-stop:
+				case <-ctx.Done():
+					log.Println(fmt.Sprintf("stopping stream writer for %v", ts.Series))
 					wg.Done()
 					return
 				case <-time.After(interval):

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"github.com/pb82/prometheus-toolbox/api"
@@ -23,10 +24,11 @@ const (
 )
 
 var (
-	prometheusUrl *string
-	configFile    *string
-	printVersion  *bool
-	batchSize     *int
+	prometheusUrl   *string
+	configFile      *string
+	printVersion    *bool
+	batchSize       *int
+	proxyListenPort *string
 )
 
 func main() {
@@ -85,19 +87,10 @@ func main() {
 	}
 
 	wg := &sync.WaitGroup{}
-	stop := make(chan bool)
-	sigs := make(chan os.Signal)
-	signal.Notify(sigs, syscall.SIGTERM, syscall.SIGABRT, syscall.SIGINT)
-	go func() {
-		sig := <-sigs
-		switch sig {
-		case syscall.SIGTERM, syscall.SIGABRT, syscall.SIGINT:
-			log.Println("stop signal received")
-			close(stop)
-		}
-	}()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGPIPE, syscall.SIGABRT)
+	defer stop()
 
-	count, err := stream.StartStreamWriters(config, parsedPrometheusUrl, wg, stop)
+	count, err := stream.StartStreamWriters(ctx, config, parsedPrometheusUrl, wg)
 	if err != nil {
 		log.Fatalf("error starting stream writer: %v", err.Error())
 	}
@@ -105,7 +98,6 @@ func main() {
 		wg.Wait()
 	} else {
 		log.Println("no streams")
-		close(stop)
 	}
 }
 
@@ -114,4 +106,5 @@ func init() {
 	configFile = flag.String("config.file", DefaultConfigFile, "config file location")
 	batchSize = flag.Int("batch.size", DefaultBatchSize, "max number of samples per remote write request")
 	printVersion = flag.Bool("version", false, "print version and exit")
+	proxyListenPort = flag.String("proxy.listen.port", "", "port to receive incoming remote write requests")
 }
