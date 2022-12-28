@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/pb82/prometheus-toolbox/api"
 	"github.com/pb82/prometheus-toolbox/pkg/precalculated"
+	"github.com/pb82/prometheus-toolbox/pkg/proxy"
 	"github.com/pb82/prometheus-toolbox/pkg/remotewrite"
 	"github.com/pb82/prometheus-toolbox/pkg/stream"
 	"github.com/pb82/prometheus-toolbox/version"
@@ -19,8 +20,9 @@ import (
 )
 
 const (
-	DefaultConfigFile = "./config.yml"
-	DefaultBatchSize  = 500
+	DefaultConfigFile      = "./config.yml"
+	DefaultBatchSize       = 500
+	DefaultProxyListenPort = 3241
 )
 
 var (
@@ -28,7 +30,8 @@ var (
 	configFile      *string
 	printVersion    *bool
 	batchSize       *int
-	proxyListenPort *string
+	proxyListen     *bool
+	proxyListenPort *int
 )
 
 func main() {
@@ -95,6 +98,13 @@ func main() {
 		log.Fatalf("error starting stream writer: %v", err.Error())
 	}
 
+	if *proxyListen {
+		err := proxy.StartListener(ctx, proxyListenPort)
+		if err != nil {
+			log.Fatalf("error starting proxy listener: %v", err.Error())
+		}
+	}
+
 	wg.Wait()
 }
 
@@ -103,5 +113,6 @@ func init() {
 	configFile = flag.String("config.file", DefaultConfigFile, "config file location")
 	batchSize = flag.Int("batch.size", DefaultBatchSize, "max number of samples per remote write request")
 	printVersion = flag.Bool("version", false, "print version and exit")
-	proxyListenPort = flag.String("proxy.listen.port", "", "port to receive incoming remote write requests")
+	proxyListen = flag.Bool("proxy.listen", false, "receive remote write requests")
+	proxyListenPort = flag.Int("proxy.listen.port", DefaultProxyListenPort, "port to receive remote write requests")
 }

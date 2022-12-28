@@ -4,4 +4,4 @@ time_series:
   - series: up{pod="database", namespace="backend"}
     stream: 1+0
   - series: memory_usage{namespace="backend"}
-    stream: 1+0
+    stream: 512+0

@@ -41,7 +41,6 @@ func StartStreamWriters(ctx context.Context, config *api.Config, prometheusUrl *
 			for {
 				select {
 				case <-ctx.Done():
-					log.Println(fmt.Sprintf("stopping stream writer for %v", ts.Series))
 					wg.Done()
 					return
 				case <-time.After(interval):

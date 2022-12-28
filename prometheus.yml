@@ -1,3 +1,6 @@
 global:
   scrape_interval: 10s
   evaluation_interval: 30s
+remote_write:
+  - name: "self"
+    url: "http://localhost:3241"
