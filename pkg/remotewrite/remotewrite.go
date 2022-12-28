@@ -2,7 +2,6 @@ package remotewrite
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"fmt"
 	"github.com/pb82/prometheus-toolbox/internal"
@@ -59,7 +58,7 @@ func SendWriteRequest(wr *prometheus.WriteRequest, prometheusUrl *url.URL) error
 		Timeout: 30 * time.Second,
 	}
 
-	resp, err := httpClient.Do(req.WithContext(context.TODO()))
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return err
 	}
