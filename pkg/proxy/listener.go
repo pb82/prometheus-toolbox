@@ -4,20 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/golang/snappy"
 	"github.com/pb82/prometheus-toolbox/pkg/metrics"
+	"github.com/pb82/prometheus-toolbox/pkg/remotewrite"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"go.buf.build/protocolbuffers/go/prometheus/prometheus"
-	"google.golang.org/protobuf/proto"
-	"io"
 	"log"
 	"net/http"
 )
-
-type sizeInfo struct {
-	compressedSize   float64
-	uncompressedSize float64
-}
 
 type router struct {
 	prometheusHandler http.Handler
@@ -29,51 +21,30 @@ func newRouter() router {
 	}
 }
 
-func decodeWriteRequest(r io.Reader) (*sizeInfo, *prometheus.WriteRequest, error) {
-	var si sizeInfo
-	compressed, err := io.ReadAll(r)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	reqBuf, err := snappy.Decode(nil, compressed)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	si.compressedSize = float64(len(compressed))
-	si.uncompressedSize = float64(len(reqBuf))
-
-	var req prometheus.WriteRequest
-	if err := proto.Unmarshal(reqBuf, &req); err != nil {
-		return nil, nil, err
-	}
-
-	return &si, &req, nil
-}
-
 func handleRemoteWriteRequest(w http.ResponseWriter, r *http.Request) {
-	log.Println("remote write request received")
-
-	si, remoteWriteRequest, err := decodeWriteRequest(r.Body)
+	si, _, err := remotewrite.DecodeWriteRequest(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	log.Printf("received remote write request from %v: %v", r.RemoteAddr, si.String())
 	metrics.RemoteWriteRequestCount.WithLabelValues(r.RemoteAddr).Inc()
-	metrics.RemoteWriteRequestCompressedSize.WithLabelValues(r.RemoteAddr).Set(si.compressedSize)
-	metrics.RemoteWriteRequestUncompressedSize.WithLabelValues(r.RemoteAddr).Set(si.uncompressedSize)
-	metrics.RemoteWriteRequestTimeseriesCount.WithLabelValues(r.RemoteAddr).Set(float64(len(remoteWriteRequest.Timeseries)))
+	metrics.RemoteWriteRequestCompressedSize.WithLabelValues(r.RemoteAddr).Set(si.CompressedSize)
+	metrics.RemoteWriteRequestUncompressedSize.WithLabelValues(r.RemoteAddr).Set(si.UncompressedSize)
+	metrics.RemoteWriteRequestTimeseriesCount.WithLabelValues(r.RemoteAddr).Set(si.TimeseriesCount)
 
 	w.WriteHeader(http.StatusNoContent)
 }
 
 func (r router) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
-	if req.Method == http.MethodPost && req.URL.Path == "/" {
-		handleRemoteWriteRequest(resp, req)
-	} else if req.Method == http.MethodGet && req.URL.Path == "/" {
+	switch fmt.Sprintf("%v %v", req.Method, req.URL.Path) {
+	case "GET /":
 		r.prometheusHandler.ServeHTTP(resp, req)
+	case "POST /":
+		handleRemoteWriteRequest(resp, req)
+	default:
+		resp.WriteHeader(http.StatusNotFound)
 	}
 }
 
