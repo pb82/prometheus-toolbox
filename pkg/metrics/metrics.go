@@ -32,6 +32,13 @@ var (
 		Name:      "timeseries_count",
 		Help:      "number of time series in remote write request",
 	}, []string{"origin"})
+
+	RemoteWriteHeader = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Namespace: "prometheus_toolbox",
+		Subsystem: "remote_write",
+		Name:      "header",
+		Help:      "present http headers in remote write requests",
+	}, []string{"origin", "header", "value"})
 )
 
 func init() {
@@ -39,4 +46,5 @@ func init() {
 	Registry.MustRegister(RemoteWriteRequestCompressedSize)
 	Registry.MustRegister(RemoteWriteRequestUncompressedSize)
 	Registry.MustRegister(RemoteWriteRequestTimeseriesCount)
+	Registry.MustRegister(RemoteWriteHeader)
 }

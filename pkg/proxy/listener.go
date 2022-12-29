@@ -9,6 +9,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
 	"net/http"
+	"strings"
+)
+
+const (
+	HeaderContentLength = "Content-Length"
 )
 
 type router struct {
@@ -33,6 +38,15 @@ func handleRemoteWriteRequest(w http.ResponseWriter, r *http.Request) {
 	metrics.RemoteWriteRequestCompressedSize.WithLabelValues(r.RemoteAddr).Set(si.CompressedSize)
 	metrics.RemoteWriteRequestUncompressedSize.WithLabelValues(r.RemoteAddr).Set(si.UncompressedSize)
 	metrics.RemoteWriteRequestTimeseriesCount.WithLabelValues(r.RemoteAddr).Set(si.TimeseriesCount)
+
+	for header, value := range r.Header {
+		// the value of Content-Length is by its nature variable and would produce a large number
+		// of time series if recorded
+		if header == HeaderContentLength {
+			continue
+		}
+		metrics.RemoteWriteHeader.WithLabelValues(r.RemoteAddr, header, strings.Join(value, ",")).Set(1)
+	}
 
 	w.WriteHeader(http.StatusNoContent)
 }
