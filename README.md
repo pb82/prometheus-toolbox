@@ -63,6 +63,10 @@ time_series:                      # List of time series to simulate
     values: 1+1x100               # Precalculated samples
   - series: metric_a{label="a"}   # Another time series
     stream: 1+0                   # Realtime samples
+  - series: metric_b{label="a"}   # 
+    values: 1+1x50 50+0x50        # Multiple value sequences are possible
+  - series: metric_c{label="a"}   # 
+    values: _x50 1+0x50           # The underscore represents an empty value (no data received). Time still advances.    
 ```
 
 The format for precalculated samples is:
