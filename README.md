@@ -99,12 +99,12 @@ $ cat config.yaml
 interval: 10s
 time_series:
   - series: metric_a{label="a"}
-    values: 1+0x100
+    values: 1+0x100 _x50
   - series: metric_b{label="b"}
-    values: 1+1x50
+    values: 1+1x50 50+0x50 50-1x50
 ```
 
-**NOTE:** if you're not familiar with the `series` and `values` notation, it is similar to how unit tests are written. For more information, have a look [here](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/#series).
+**NOTE:** if you're not familiar with the `series` and `values` notation, it is similar to how unit tests with `promtool` are written. For more information, have a look [here](https://prometheus.io/docs/prometheus/latest/configuration/unit_testing_rules/#series).
 
 Run the CLI with the following options:
 
