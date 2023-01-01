@@ -14,6 +14,8 @@ import (
 
 const (
 	HeaderContentLength = "Content-Length"
+	MaxLabelKeyLength   = 127
+	MaxLabelValueLength = 255
 )
 
 type router struct {
@@ -27,6 +29,14 @@ func newRouter() router {
 }
 
 func handleRemoteWriteRequest(w http.ResponseWriter, r *http.Request) {
+	trimToMaxSize := func(maxLength int, original string) string {
+		if len(original) >= maxLength {
+			return fmt.Sprintf("%v...", original[:maxLength-3])
+		} else {
+			return original
+		}
+	}
+
 	si, _, err := remotewrite.DecodeWriteRequest(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -45,7 +55,9 @@ func handleRemoteWriteRequest(w http.ResponseWriter, r *http.Request) {
 		if header == HeaderContentLength {
 			continue
 		}
-		metrics.RemoteWriteHeader.WithLabelValues(r.RemoteAddr, header, strings.Join(value, ",")).Set(1)
+		metrics.RemoteWriteHeader.WithLabelValues(r.RemoteAddr,
+			trimToMaxSize(MaxLabelKeyLength, header),
+			trimToMaxSize(MaxLabelValueLength, strings.Join(value, ","))).Set(1)
 	}
 
 	w.WriteHeader(http.StatusNoContent)

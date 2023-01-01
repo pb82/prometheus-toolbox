@@ -50,6 +50,8 @@ The following flags are accepted:
 * `--prometheus.url` Prometheus base url
 * `--config.file` Config file location
 * `--batch.size` Samples per remote write request, defaults to 500
+* `--proxy.listen` Turns on the remote write listener
+* `--proxy.listen.port` Port to receive remote write requests, defaults to 3241
 
 # Config file format
 
@@ -88,6 +90,8 @@ Streaming realtime samples only ends when the user interrupts the program, thus 
 [Data generator](#data-generator): write precalculated samples.
 
 [Streaming samples](#streaming-samples): write realtime data.
+
+[Remote write inspector](#remote-write-inspector): inspect remote write requests.
 
 ## Data generator
 
@@ -146,3 +150,58 @@ This will send a sample generated from the field `stream` every ten seconds.
 **NOTE:** in contrast to `values`, when providing `stream` you can't specify the number of samples. Data is generated continuously.
 
 **NOTE:** you can have both, `values` and `stream` for the same series.
+
+## Remote write inspector
+
+This tool can receive remote write requests and expose insights as metrics.
+To enable the remote write listener, pass the `--proxy.listen` flag.
+By default, remote write requests are received on port 3241, but this can be overridden using the `--proxy.listen.port` flag.
+
+When remote write requests are received, `prometheus-toolbox` will collect data and expose it as metrics.
+The metrics can be viewed on the same port as the listener with a GET request.
+
+The following data is collected:
+
+* Request count - how many write requests have been received
+* Compressed size - snappy compressed size of the write request in bytes
+* Uncompressed size - uncompressed size of the write request in bytes
+* Timeseries count - number of time series in write request
+* Http headers - present http headers
+
+For example:
+
+Configure prometheus to send write requests to `prometheus-toolbox`, by adding a `remote_write` section to `prometheus.yaml`: 
+
+```yaml
+remote_write:
+  - name: "self"
+    url: "http://localhost:3241"
+```
+
+**NOTE:** This is assuming that both Prometheus and prometheus-toolbox are running locally.
+
+Then send a GET request to the `--proxy.listen` endpoint: 
+
+```shell
+$ curl -XGET http://localhost:3241
+
+# HELP prometheus_toolbox_remote_write_compressed_size compressed remote write request size in bytes
+# TYPE prometheus_toolbox_remote_write_compressed_size gauge
+prometheus_toolbox_remote_write_compressed_size{origin="[::1]:58060"} 112
+# HELP prometheus_toolbox_remote_write_header present http headers in remote write requests
+# TYPE prometheus_toolbox_remote_write_header gauge
+prometheus_toolbox_remote_write_header{header="Authorization",origin="[::1]:58060",value="Bearer 92MO6wrerqwoLWlJZfhunRIRGwl2QgsGl9rkJRI5Ts3mr1oYLBsjw92dREb2QRpfrGn5xvZFC4pwKdSupMTcBHZVRien6oXg8VSFCuAaquF9Wcagem6aHVyewDejqXFfg0m0pgTAf6hqbfNFFe5ysnygnaZfaGNHpKR5SC2VpscTKeHElEvhJUqSHxc6TO9RMzJBXjL2XPi0GMAshLMrP23clY9y9UtByF2cbobH3eYqrbRUocXog..."} 1
+prometheus_toolbox_remote_write_header{header="Content-Encoding",origin="[::1]:58060",value="snappy"} 1
+prometheus_toolbox_remote_write_header{header="Content-Type",origin="[::1]:58060",value="application/x-protobuf"} 1
+prometheus_toolbox_remote_write_header{header="User-Agent",origin="[::1]:58060",value="Prometheus/2.39.1"} 1
+prometheus_toolbox_remote_write_header{header="X-Prometheus-Remote-Write-Version",origin="[::1]:58060",value="0.1.0"} 1
+# HELP prometheus_toolbox_remote_write_request_count number of received remote write requests
+# TYPE prometheus_toolbox_remote_write_request_count counter
+prometheus_toolbox_remote_write_request_count{origin="[::1]:58060"} 3
+# HELP prometheus_toolbox_remote_write_timeseries_count number of time series in remote write request
+# TYPE prometheus_toolbox_remote_write_timeseries_count gauge
+prometheus_toolbox_remote_write_timeseries_count{origin="[::1]:58060"} 2
+# HELP prometheus_toolbox_remote_write_uncompressed_size uncompressed remote write request size in bytes
+# TYPE prometheus_toolbox_remote_write_uncompressed_size gauge
+prometheus_toolbox_remote_write_uncompressed_size{origin="[::1]:58060"} 143
+```
