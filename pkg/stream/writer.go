@@ -1,6 +1,7 @@
 package stream
 
 import (
+	"context"
 	"fmt"
 	"github.com/pb82/prometheus-toolbox/api"
 	"github.com/pb82/prometheus-toolbox/pkg/remotewrite"
@@ -13,46 +14,45 @@ import (
 	"time"
 )
 
-func StartStreamWriters(config *api.Config, prometheusUrl *url.URL, wg *sync.WaitGroup, stop <-chan bool) (int, error) {
-	count := 0
+func StartStreamWriters(ctx context.Context, config *api.Config, prometheusUrl *url.URL, wg *sync.WaitGroup) error {
 	interval, err := time.ParseDuration(config.Interval)
 	if err != nil {
-		return count, err
+		return err
 	}
 
 	for _, ts := range config.Series {
+		ts := ts
 		if ts.Stream == "" || ts.Series == "" {
 			continue
 		}
 
 		series, err := timeseries.ScanAndParseTimeSeries(ts.Series)
 		if err != nil {
-			return count, err
+			return err
 		}
 
 		stream, err := sequence.ScanAndParseStream(ts.Stream)
 		if err != nil {
-			return count, err
+			return err
 		}
 
 		wg.Add(1)
-		count += 1
 		go func() {
 			for {
 				select {
-				case _ = <-stop:
+				case <-ctx.Done():
 					wg.Done()
 					return
 				case <-time.After(interval):
 					nextValue := stream.Next()
-					timeseries := prometheus.TimeSeries{}
-					timeseries.Labels = series.Labels
-					timeseries.Samples = append(timeseries.Samples, &prometheus.Sample{
+					sendSeries := prometheus.TimeSeries{}
+					sendSeries.Labels = series.Labels
+					sendSeries.Samples = append(sendSeries.Samples, &prometheus.Sample{
 						Value:     nextValue,
 						Timestamp: time.Now().UnixMilli(),
 					})
 					wr := &prometheus.WriteRequest{}
-					wr.Timeseries = append(wr.Timeseries, &timeseries)
+					wr.Timeseries = append(wr.Timeseries, &sendSeries)
 					log.Println(fmt.Sprintf("sending sample for timeseries %v: %v", ts.Series, nextValue))
 					err := remotewrite.SendWriteRequest(wr, prometheusUrl)
 					if err != nil {
@@ -62,5 +62,5 @@ func StartStreamWriters(config *api.Config, prometheusUrl *url.URL, wg *sync.Wai
 			}
 		}()
 	}
-	return count, nil
+	return nil
 }

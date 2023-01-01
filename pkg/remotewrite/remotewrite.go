@@ -2,9 +2,9 @@ package remotewrite
 
 import (
 	"bytes"
-	"context"
 	"errors"
 	"fmt"
+	"github.com/pb82/prometheus-toolbox/internal"
 	"go.buf.build/protocolbuffers/go/prometheus/prometheus"
 	"google.golang.org/protobuf/proto"
 	"io"
@@ -15,28 +15,29 @@ import (
 	"github.com/golang/snappy"
 )
 
-func Precheck(wr *prometheus.WriteRequest, i string) error {
-	now := time.Now().UnixMilli()
-	interval, err := time.ParseDuration(i)
+// DecodeWriteRequest deserialize a compressed remote write request
+func DecodeWriteRequest(r io.Reader) (*internal.SizeInfo, *prometheus.WriteRequest, error) {
+	var si internal.SizeInfo
+	compressed, err := io.ReadAll(r)
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
-	for _, ts := range wr.Timeseries {
-		var lastTimestamp int64
-		for _, sample := range ts.Samples {
-			if sample.Timestamp > now {
-				return errors.New("future sample detected")
-			}
-
-			diff := sample.Timestamp - lastTimestamp
-			if diff < interval.Milliseconds() {
-				return errors.New("duplicate sample detected")
-			}
-			lastTimestamp = sample.Timestamp
-		}
+	reqBuf, err := snappy.Decode(nil, compressed)
+	if err != nil {
+		return nil, nil, err
 	}
-	return nil
+
+	si.CompressedSize = float64(len(compressed))
+	si.UncompressedSize = float64(len(reqBuf))
+
+	var req prometheus.WriteRequest
+	if err := proto.Unmarshal(reqBuf, &req); err != nil {
+		return nil, nil, err
+	}
+
+	si.TimeseriesCount = float64(len(req.Timeseries))
+	return &si, &req, nil
 }
 
 func SendWriteRequest(wr *prometheus.WriteRequest, prometheusUrl *url.URL) error {
@@ -57,7 +58,7 @@ func SendWriteRequest(wr *prometheus.WriteRequest, prometheusUrl *url.URL) error
 		Timeout: 30 * time.Second,
 	}
 
-	resp, err := httpClient.Do(req.WithContext(context.TODO()))
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return err
 	}

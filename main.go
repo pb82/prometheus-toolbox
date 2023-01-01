@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"github.com/pb82/prometheus-toolbox/api"
 	"github.com/pb82/prometheus-toolbox/pkg/precalculated"
+	"github.com/pb82/prometheus-toolbox/pkg/proxy"
 	"github.com/pb82/prometheus-toolbox/pkg/remotewrite"
 	"github.com/pb82/prometheus-toolbox/pkg/stream"
 	"github.com/pb82/prometheus-toolbox/version"
@@ -18,15 +20,18 @@ import (
 )
 
 const (
-	DefaultConfigFile = "./config.yml"
-	DefaultBatchSize  = 500
+	DefaultConfigFile      = "./config.yml"
+	DefaultBatchSize       = 500
+	DefaultProxyListenPort = 3241
 )
 
 var (
-	prometheusUrl *string
-	configFile    *string
-	printVersion  *bool
-	batchSize     *int
+	prometheusUrl   *string
+	configFile      *string
+	printVersion    *bool
+	batchSize       *int
+	proxyListen     *bool
+	proxyListenPort *int
 )
 
 func main() {
@@ -85,28 +90,22 @@ func main() {
 	}
 
 	wg := &sync.WaitGroup{}
-	stop := make(chan bool)
-	sigs := make(chan os.Signal)
-	signal.Notify(sigs, syscall.SIGTERM, syscall.SIGABRT, syscall.SIGINT)
-	go func() {
-		sig := <-sigs
-		switch sig {
-		case syscall.SIGTERM, syscall.SIGABRT, syscall.SIGINT:
-			log.Println("stop signal received")
-			close(stop)
-		}
-	}()
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGPIPE, syscall.SIGABRT)
+	defer stop()
 
-	count, err := stream.StartStreamWriters(config, parsedPrometheusUrl, wg, stop)
+	err = stream.StartStreamWriters(ctx, config, parsedPrometheusUrl, wg)
 	if err != nil {
 		log.Fatalf("error starting stream writer: %v", err.Error())
 	}
-	if count > 0 {
-		wg.Wait()
-	} else {
-		log.Println("no streams")
-		close(stop)
+
+	if *proxyListen {
+		err := proxy.StartListener(ctx, proxyListenPort)
+		if err != nil {
+			log.Fatalf("error starting proxy listener: %v", err.Error())
+		}
 	}
+
+	wg.Wait()
 }
 
 func init() {
@@ -114,4 +113,6 @@ func init() {
 	configFile = flag.String("config.file", DefaultConfigFile, "config file location")
 	batchSize = flag.Int("batch.size", DefaultBatchSize, "max number of samples per remote write request")
 	printVersion = flag.Bool("version", false, "print version and exit")
+	proxyListen = flag.Bool("proxy.listen", false, "receive remote write requests")
+	proxyListenPort = flag.Int("proxy.listen.port", DefaultProxyListenPort, "port to receive remote write requests")
 }

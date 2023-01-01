@@ -9,9 +9,9 @@ func ScanAndParseSequence(source string) (*api.SequenceList, error) {
 	scanner.Scan()
 
 	parser := NewParser(scanner.Tokens)
-	err := parser.ParseSequence()
+	sequences, err := parser.ParseSequence()
 	if err != nil {
 		return nil, err
 	}
-	return &parser.Sequences, nil
+	return sequences, nil
 }

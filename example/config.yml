@@ -1,9 +1,9 @@
 ---
-interval: 30s
+interval: 5s
 time_series:
   - series: up{pod="database", namespace="backend"}
-    values: 1+0x100
+    values: 2+0x20
     stream: 1+0
   - series: memory_usage{namespace="backend"}
-    values: 200+0x100
-    stream: 200+0
+    values: 256+2x20
+    stream: 512+0
