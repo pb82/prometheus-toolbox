@@ -34,11 +34,15 @@ var (
 	proxyListen     *bool
 	proxyListenPort *int
 	environment     *bool
+	initialize      *bool
 )
 
 var (
 	//go:embed environment.sh
 	environmentSetupScript string
+
+	//go:embed config.yml
+	exampleConfig string
 )
 
 func main() {
@@ -52,6 +56,11 @@ func main() {
 
 	if environment != nil && *environment {
 		fmt.Println(environmentSetupScript)
+		os.Exit(0)
+	}
+
+	if initialize != nil && *initialize {
+		fmt.Println(exampleConfig)
 		os.Exit(0)
 	}
 
@@ -128,4 +137,5 @@ func init() {
 	proxyListen = flag.Bool("proxy.listen", false, "receive remote write requests")
 	proxyListenPort = flag.Int("proxy.listen.port", DefaultProxyListenPort, "port to receive remote write requests")
 	environment = flag.Bool("environment", false, "print environment setup script and exit")
+	initialize = flag.Bool("init", false, "print sample config file and exit")
 }
