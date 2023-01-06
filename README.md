@@ -19,27 +19,32 @@ A specific version:
 
 `GOPROXY=direct go install github.com/pb82/prometheus-toolbox@<version>`
 
-## Starting a local Prometheus instance
+## Starting a local development environment
 
-You can use the included Makefile target:
+To start a local development environment including Prometheus and Grafana use the built-in `--environment` command.
+This prints out a shell script to spin up containers for both applications.
+It also sets up a data source in Grafana to connect it to Prometheus.
+Either `podman` or `docker`, as well as `curl` are required.
+
+Example:
+
+```sh
+$ prometheus-toolbox --environment | bash
+detected runtime is podman, starting containers. this can take some time...
+starting prometheus container from image docker.io/prom/prometheus:latest
+starting grafana container from image docker.io/grafana/grafana-oss:latest
+creating prometheus datasource
+Prometheus is running on port 9090
+Grafana is running on port 3000
+Grafana credentials are admin/admin
+press ctrl-c to quit
+```
+
+The Prometheus and Grafana images can be overridden by exporting the `PROMETHEUS_IMAGE` or `GRAFANA_IMAGE` variables:
 
 ```shell
-$ make prom
+$ export GRAFANA_IMAGE=docker.io/grafana/grafana-oss:8.5.15 && ./prometheus-toolbox --environment | bash
 ```
-
-or directly with docker:
-
-Create `prometheus.yml`:
-
-```yaml
-global:
-  scrape_interval: 10s
-  evaluation_interval: 30s
-```
-
-then run the container:
-
-`docker run -p 9090:9090 --network=host -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus --web.enable-remote-write-receiver --config.file=/etc/prometheus/prometheus.yml`
 
 # Flags
 
@@ -52,6 +57,7 @@ The following flags are accepted:
 * `--batch.size` Samples per remote write request, defaults to 500
 * `--proxy.listen` Turns on the remote write listener
 * `--proxy.listen.port` Port to receive remote write requests, defaults to 3241
+* `--environment` Print environment setup script and exit
 
 # Config file format
 

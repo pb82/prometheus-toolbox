@@ -1,13 +1,13 @@
 #!/usr/bin/env sh
 
 PROMETHEUS_NAME="prometheus_toolbox_prometheus"
-PROMETHEUS_IMAGE="docker.io/prom/prometheus:latest"
+: ${PROMETHEUS_IMAGE:="docker.io/prom/prometheus:latest"}
 PROMETHEUS_PORT=9090
 
 GRAFANA_NAME="prometheus_toolbox_grafana"
-GRAFANA_IMAGE="docker.io/grafana/grafana-oss:latest"
+
+: ${GRAFANA_IMAGE:="docker.io/grafana/grafana-oss:latest"}
 GRAFANA_PORT=3000
-GRAFANA_DATASOURCE=""
 
 RUNTIME="docker"
 OPTS=""
@@ -24,20 +24,22 @@ then
   exit 1
 fi
 
-echo "detected runtime is $RUNTIME, please wait while the containers are started"
+echo "detected runtime is $RUNTIME, starting containers. this can take some time..."
 
 # Creata a basic prometheus config file
-cat > prometheus.yaml <<- EOF
+cat > prometheus.yml <<- EOF
 global:
   scrape_interval: 10s
   evaluation_interval: 30s
 EOF
 
 # start the prometheus container
+echo "starting prometheus container from image $PROMETHEUS_IMAGE"
 $RUNTIME run -d --rm --name $PROMETHEUS_NAME --network host $OPTS -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml $PROMETHEUS_IMAGE --web.enable-remote-write-receiver --config.file=/etc/prometheus/prometheus.yml &> /dev/null
 PROMETHEUS_CONTAINER=`$RUNTIME ps -f name=$PROMETHEUS_NAME --format "{{.ID}}"`
 
 # start the grafana container
+echo "starting grafana container from image $GRAFANA_IMAGE"
 $RUNTIME run -d --rm --name $GRAFANA_NAME --network host $OPTS $GRAFANA_IMAGE &> /dev/null
 GRAFANA_CONTAINER=`$RUNTIME ps -f name=$GRAFANA_NAME --format "{{.ID}}"`
 
@@ -50,7 +52,7 @@ cleanup() {
   $RUNTIME stop $PROMETHEUS_CONTAINER &> /dev/null
   echo "stopping grafana container $GRAFANA_CONTAINER"
   $RUNTIME stop $GRAFANA_CONTAINER &> /dev/null
-  rm -f prometheus.yaml
+  rm -f prometheus.yml
   echo "done"
   exit 0
 }

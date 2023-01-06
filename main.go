@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"flag"
 	"fmt"
 	"github.com/pb82/prometheus-toolbox/api"
@@ -32,6 +33,12 @@ var (
 	batchSize       *int
 	proxyListen     *bool
 	proxyListenPort *int
+	environment     *bool
+)
+
+var (
+	//go:embed environment.sh
+	environmentSetupScript string
 )
 
 func main() {
@@ -40,6 +47,11 @@ func main() {
 	if printVersion != nil && *printVersion {
 		fmt.Printf("Prometheus toolbox v%v", version.Version)
 		fmt.Println()
+		os.Exit(0)
+	}
+
+	if environment != nil && *environment {
+		fmt.Println(environmentSetupScript)
 		os.Exit(0)
 	}
 
@@ -115,4 +127,5 @@ func init() {
 	printVersion = flag.Bool("version", false, "print version and exit")
 	proxyListen = flag.Bool("proxy.listen", false, "receive remote write requests")
 	proxyListenPort = flag.Int("proxy.listen.port", DefaultProxyListenPort, "port to receive remote write requests")
+	environment = flag.Bool("environment", false, "print environment setup script and exit")
 }
