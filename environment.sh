@@ -12,7 +12,6 @@ GRAFANA_DATASOURCE=""
 RUNTIME="docker"
 OPTS=""
 
-
 if command -v podman &> /dev/null
 then
   RUNTIME=podman
@@ -25,15 +24,25 @@ then
   exit 1
 fi
 
-echo "detected runtime is $RUNTIME, starting containers"
+echo "detected runtime is $RUNTIME, please wait while the containers are started"
 
+# Creata a basic prometheus config file
+cat > prometheus.yaml <<- EOF
+global:
+  scrape_interval: 10s
+  evaluation_interval: 30s
+EOF
+
+# start the prometheus container
 $RUNTIME run -d --rm --name $PROMETHEUS_NAME --network host $OPTS -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml $PROMETHEUS_IMAGE --web.enable-remote-write-receiver --config.file=/etc/prometheus/prometheus.yml &> /dev/null
 PROMETHEUS_CONTAINER=`$RUNTIME ps -f name=$PROMETHEUS_NAME --format "{{.ID}}"`
 
+# start the grafana container
 $RUNTIME run -d --rm --name $GRAFANA_NAME --network host $OPTS $GRAFANA_IMAGE &> /dev/null
 GRAFANA_CONTAINER=`$RUNTIME ps -f name=$GRAFANA_NAME --format "{{.ID}}"`
 
-echo "creating prometheus datasource..."
+# connect grafana and prometheus
+echo "creating prometheus datasource"
 curl --output /dev/null --silent --retry 5 --retry-connrefused --retry-delay 1 -H "Content-Type: application/json;charset=UTF-8" -XPOST http://admin:admin@localhost:$GRAFANA_PORT/api/datasources --data-binary '{"name":"prometheus","type":"prometheus","url":"http://localhost:9090","access":"proxy"}'
 
 cleanup() {
@@ -41,6 +50,7 @@ cleanup() {
   $RUNTIME stop $PROMETHEUS_CONTAINER &> /dev/null
   echo "stopping grafana container $GRAFANA_CONTAINER"
   $RUNTIME stop $GRAFANA_CONTAINER &> /dev/null
+  rm -f prometheus.yaml
   echo "done"
   exit 0
 }
