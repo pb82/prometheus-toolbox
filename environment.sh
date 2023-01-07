@@ -1,12 +1,12 @@
 #!/usr/bin/env sh
 
 PROMETHEUS_NAME="prometheus_toolbox_prometheus"
-: ${PROMETHEUS_IMAGE:="docker.io/prom/prometheus:latest"}
+: "${PROMETHEUS_IMAGE:="docker.io/prom/prometheus:latest"}"
 PROMETHEUS_PORT=9090
 
 GRAFANA_NAME="prometheus_toolbox_grafana"
 
-: ${GRAFANA_IMAGE:="docker.io/grafana/grafana-oss:latest"}
+: "${GRAFANA_IMAGE:="docker.io/grafana/grafana-oss:latest"}"
 GRAFANA_PORT=3000
 
 RUNTIME="docker"

@@ -2,4 +2,5 @@
 interval: 10s
 time_series:
   - series: up{command="prometheus-toolbox"}
+    values: 1+0x10
     stream: 1+0

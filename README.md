@@ -58,6 +58,7 @@ The following flags are accepted:
 * `--proxy.listen` Turns on the remote write listener
 * `--proxy.listen.port` Port to receive remote write requests, defaults to 3241
 * `--environment` Print environment setup script and exit
+* `--init` Print sample config file and exit
 
 # Config file format
 
@@ -90,6 +91,12 @@ stream: 1+1 # <initial>(plus or minus)<increment>
 ```
 
 Streaming realtime samples only ends when the user interrupts the program, thus no number of samples is needed.
+
+A basic config file can be created using the `--init` command:
+
+```shell
+$ prometheus-toolbox --init > config.yml
+```
 
 # Features
 
