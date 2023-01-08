@@ -21,7 +21,6 @@ import (
 )
 
 const (
-	DefaultPrometheusUrl   = "http://localhost:9090"
 	DefaultConfigFile      = "./config.yml"
 	DefaultBatchSize       = 500
 	DefaultProxyListenPort = 3241
@@ -131,7 +130,7 @@ func main() {
 }
 
 func init() {
-	prometheusUrl = flag.String("prometheus.url", DefaultPrometheusUrl, "prometheus base url")
+	prometheusUrl = flag.String("prometheus.url", "", "prometheus base url")
 	configFile = flag.String("config.file", DefaultConfigFile, "config file location")
 	batchSize = flag.Int("batch.size", DefaultBatchSize, "max number of samples per remote write request")
 	printVersion = flag.Bool("version", false, "print version and exit")
