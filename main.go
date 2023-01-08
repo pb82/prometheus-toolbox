@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"flag"
 	"fmt"
 	"github.com/pb82/prometheus-toolbox/api"
@@ -20,6 +21,7 @@ import (
 )
 
 const (
+	DefaultPrometheusUrl   = "http://localhost:9090"
 	DefaultConfigFile      = "./config.yml"
 	DefaultBatchSize       = 500
 	DefaultProxyListenPort = 3241
@@ -32,6 +34,16 @@ var (
 	batchSize       *int
 	proxyListen     *bool
 	proxyListenPort *int
+	environment     *bool
+	initialize      *bool
+)
+
+var (
+	//go:embed environment.sh
+	environmentSetupScript string
+
+	//go:embed config.yml
+	exampleConfig string
 )
 
 func main() {
@@ -40,6 +52,16 @@ func main() {
 	if printVersion != nil && *printVersion {
 		fmt.Printf("Prometheus toolbox v%v", version.Version)
 		fmt.Println()
+		os.Exit(0)
+	}
+
+	if environment != nil && *environment {
+		fmt.Println(environmentSetupScript)
+		os.Exit(0)
+	}
+
+	if initialize != nil && *initialize {
+		fmt.Println(exampleConfig)
 		os.Exit(0)
 	}
 
@@ -109,10 +131,12 @@ func main() {
 }
 
 func init() {
-	prometheusUrl = flag.String("prometheus.url", "", "prometheus base url")
+	prometheusUrl = flag.String("prometheus.url", DefaultPrometheusUrl, "prometheus base url")
 	configFile = flag.String("config.file", DefaultConfigFile, "config file location")
 	batchSize = flag.Int("batch.size", DefaultBatchSize, "max number of samples per remote write request")
 	printVersion = flag.Bool("version", false, "print version and exit")
 	proxyListen = flag.Bool("proxy.listen", false, "receive remote write requests")
 	proxyListenPort = flag.Int("proxy.listen.port", DefaultProxyListenPort, "port to receive remote write requests")
+	environment = flag.Bool("environment", false, "print environment setup script and exit")
+	initialize = flag.Bool("init", false, "print sample config file and exit")
 }

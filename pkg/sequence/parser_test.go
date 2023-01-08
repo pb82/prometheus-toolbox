@@ -68,13 +68,14 @@ func TestParser(t *testing.T) {
 		scanner.Scan()
 
 		parser := NewParser(scanner.Tokens)
-		err := parser.ParseSequence()
+		seq, err := parser.ParseSequence()
 		if err != nil && !tc.wantErr {
 			t.Fatalf("\nerror: %v \n case: %v", err.Error(), tc)
+		} else if err != nil {
+			continue
 		}
 
-		seq := parser.Sequences.AsIntArray(time.Second * 1)
-		if !reflect.DeepEqual(seq, tc.wantSequence) {
+		if !reflect.DeepEqual(seq.AsIntArray(time.Second*1), tc.wantSequence) {
 			t.Fatalf("\nwant: %v \n got: %v", tc.wantSequence, seq)
 		}
 	}
@@ -108,17 +109,16 @@ func TestStreamParser(t *testing.T) {
 		scanner.Scan()
 
 		parser := NewParser(scanner.Tokens)
-		err := parser.ParseStream()
+		stream, err := parser.ParseStream()
 		if err != nil && !tc.wantErr {
 			t.Fatalf("\nerror: %v \n case: %v", err.Error(), tc)
 		}
 
 		if !tc.wantErr {
-			s := &parser.Stream
 			var streamValues []int64
 			i := 0
 			for i < 10 {
-				streamValues = append(streamValues, int64(s.Next()))
+				streamValues = append(streamValues, int64(stream.Next()))
 				i += 1
 			}
 
