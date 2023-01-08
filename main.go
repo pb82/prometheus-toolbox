@@ -21,7 +21,6 @@ import (
 )
 
 const (
-	DefaultPrometheusUrl   = "http://localhost:9090"
 	DefaultConfigFile      = "./config.yml"
 	DefaultBatchSize       = 500
 	DefaultProxyListenPort = 3241
