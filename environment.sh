@@ -35,17 +35,17 @@ EOF
 
 # start the prometheus container
 echo "starting prometheus container from image $PROMETHEUS_IMAGE"
-$RUNTIME run -d --rm --name $PROMETHEUS_NAME --network host $OPTS -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml $PROMETHEUS_IMAGE --web.enable-remote-write-receiver --config.file=/etc/prometheus/prometheus.yml &> /dev/null
+$RUNTIME run -d --rm --name $PROMETHEUS_NAME -p 9090:9090 $OPTS -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml $PROMETHEUS_IMAGE --web.enable-remote-write-receiver --config.file=/etc/prometheus/prometheus.yml &> /dev/null
 PROMETHEUS_CONTAINER=`$RUNTIME ps -f name=$PROMETHEUS_NAME --format "{{.ID}}"`
 
 # start the grafana container
 echo "starting grafana container from image $GRAFANA_IMAGE"
-$RUNTIME run -d --rm --name $GRAFANA_NAME --network host $OPTS $GRAFANA_IMAGE &> /dev/null
+$RUNTIME run -d --rm --name $GRAFANA_NAME -p 3000:3000 $OPTS $GRAFANA_IMAGE &> /dev/null
 GRAFANA_CONTAINER=`$RUNTIME ps -f name=$GRAFANA_NAME --format "{{.ID}}"`
 
 # connect grafana and prometheus
 echo "creating prometheus datasource"
-curl --output /dev/null --silent --retry 5 --retry-connrefused --retry-delay 1 -H "Content-Type: application/json;charset=UTF-8" -XPOST http://admin:admin@localhost:$GRAFANA_PORT/api/datasources --data-binary '{"name":"prometheus","type":"prometheus","url":"http://localhost:9090","access":"proxy"}'
+curl --output /dev/null --retry 5 --retry-all-errors --retry-delay 5 --silent -H "Content-Type: application/json;charset=UTF-8" -XPOST http://admin:admin@localhost:3000/api/datasources --data-binary '{"name":"prometheus","type":"prometheus","url":"http://172.17.0.1:9090","access":"proxy"}'
 
 cleanup() {
   echo "stopping prometheus container $PROMETHEUS_CONTAINER"
