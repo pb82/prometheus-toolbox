@@ -74,6 +74,7 @@ func (r router) ServeHTTP(resp http.ResponseWriter, req *http.Request) {
 	}
 }
 
+// StartListener starts a remote write listener on the given port
 func StartListener(ctx context.Context, port *int) error {
 	if port == nil {
 		return errors.New("port number required")
