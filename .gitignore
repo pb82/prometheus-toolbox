@@ -1,4 +1,5 @@
 prometheus.yaml
 prometheus-toolbox
+prometheus-toolbox_*
 vendor
 .idea
