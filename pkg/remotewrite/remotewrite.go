@@ -49,6 +49,7 @@ func DecodeWriteRequest(r io.Reader) (*internal.SizeInfo, *prometheus.WriteReque
 	return &si, &req, nil
 }
 
+// SendWriteRequest encodes and sends a write request to the given url
 func SendWriteRequest(wr *prometheus.WriteRequest, prometheusUrl *url.URL) error {
 	data, _ := proto.Marshal(wr)
 	encoded := snappy.Encode(nil, data)

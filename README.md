@@ -52,10 +52,10 @@ The following flags are accepted:
 
 * `--help` Print help and exit
 * `--version` Print version and exit
-* `--prometheus.url` Prometheus base url
-* `--config.file` Config file location
+* `--prometheus.url` Prometheus base url, defaults to `http://localhost:9090`
+* `--config.file` Config file location, defaults to `./config.yml`
 * `--batch.size` Samples per remote write request, defaults to 500
-* `--proxy.listen` Turns on the remote write listener
+* `--proxy.listen` Turns on the remote write listener, defaults to `false`
 * `--proxy.listen.port` Port to receive remote write requests, defaults to 3241
 * `--environment` Print environment setup script and exit
 * `--init` Print sample config file and exit
