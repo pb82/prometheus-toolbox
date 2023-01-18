@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/pb82/prometheus-toolbox/api"
+	"github.com/pb82/prometheus-toolbox/internal"
 	"github.com/pb82/prometheus-toolbox/pkg/precalculated"
 	"github.com/pb82/prometheus-toolbox/pkg/proxy"
 	"github.com/pb82/prometheus-toolbox/pkg/remotewrite"
@@ -21,20 +22,27 @@ import (
 )
 
 const (
-	DefaultConfigFile      = "./config.yml"
-	DefaultBatchSize       = 500
-	DefaultProxyListenPort = 3241
+	DefaultConfigFile          = "./config.yml"
+	DefaultBatchSize           = 500
+	DefaultProxyListenPort     = 3241
+	DefaultRemoteWriteEndpoint = "/api/v1/write"
 )
 
 var (
-	prometheusUrl   *string
-	configFile      *string
-	printVersion    *bool
-	batchSize       *int
-	proxyListen     *bool
-	proxyListenPort *int
-	environment     *bool
-	initialize      *bool
+	prometheusUrl     *string
+	configFile        *string
+	printVersion      *bool
+	batchSize         *int
+	proxyListen       *bool
+	proxyListenPort   *int
+	environment       *bool
+	initialize        *bool
+	oidcClientId      *string
+	oidcClientSecret  *string
+	oidcIssuerUrl     *string
+	oidcAudience      *string
+	oidcEnabled       *bool
+	remoteWriteSuffix *string
 )
 
 var (
@@ -86,7 +94,7 @@ func main() {
 		fmt.Println(fmt.Sprintf("error parsing prometheus base url: %v", err.Error()))
 		os.Exit(1)
 	}
-	parsedPrometheusUrl.Path = path.Join(parsedPrometheusUrl.Path, "/api/v1/write")
+	parsedPrometheusUrl.Path = path.Join(parsedPrometheusUrl.Path, *remoteWriteSuffix)
 
 	requests, samples, err := precalculated.SchedulePrecalculatedRemoteWriteRequests(config, *batchSize)
 	if err != nil {
@@ -94,11 +102,19 @@ func main() {
 		os.Exit(1)
 	}
 
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGPIPE, syscall.SIGABRT)
+	defer stop()
+
+	remoteWriter, err := buildRemoteWriter(ctx, parsedPrometheusUrl)
+	if err != nil {
+		panic(err)
+	}
+
 	if len(requests) > 0 {
 		log.Printf("sending %v samples in %v requests (max batch size is %v)", samples, len(requests), *batchSize)
 
 		for i, request := range requests {
-			err = remotewrite.SendWriteRequest(request, parsedPrometheusUrl)
+			err = remoteWriter.SendWriteRequest(request)
 			if err != nil {
 				log.Fatalf("error sending batch: %v", err.Error())
 			}
@@ -111,10 +127,7 @@ func main() {
 	}
 
 	wg := &sync.WaitGroup{}
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGINT, syscall.SIGTERM, syscall.SIGPIPE, syscall.SIGABRT)
-	defer stop()
-
-	err = stream.StartStreamWriters(ctx, config, parsedPrometheusUrl, wg)
+	err = stream.StartStreamWriters(ctx, config, remoteWriter, wg)
 	if err != nil {
 		log.Fatalf("error starting stream writer: %v", err.Error())
 	}
@@ -129,6 +142,16 @@ func main() {
 	wg.Wait()
 }
 
+func buildRemoteWriter(ctx context.Context, prometheusUrl *url.URL) (*remotewrite.RemoteWriter, error) {
+	if *oidcEnabled {
+		oidcConfig := internal.NewOIDCConfig(*oidcClientId, *oidcClientSecret, *oidcIssuerUrl, *oidcAudience)
+		oidcConfig.Validate()
+		return remotewrite.NewRemoteWriterWithOIDCTransport(ctx, prometheusUrl, oidcConfig)
+	} else {
+		return remotewrite.NewRemoteWriter(prometheusUrl), nil
+	}
+}
+
 func init() {
 	prometheusUrl = flag.String("prometheus.url", "", "prometheus base url")
 	configFile = flag.String("config.file", DefaultConfigFile, "config file location")
@@ -138,4 +161,10 @@ func init() {
 	proxyListenPort = flag.Int("proxy.listen.port", DefaultProxyListenPort, "port to receive remote write requests")
 	environment = flag.Bool("environment", false, "print environment setup script and exit")
 	initialize = flag.Bool("init", false, "print sample config file and exit")
+	oidcClientId = flag.String("oidc.clientId", "", "oidc client id")
+	oidcClientSecret = flag.String("oidc.clientSecret", "", "oidc client secret")
+	oidcIssuerUrl = flag.String("oidc.issuer", "", "oidc token issuer url")
+	oidcAudience = flag.String("oidc.audience", "", "oidc audience")
+	oidcEnabled = flag.Bool("oidc.enabled", false, "enable oidc token authentication")
+	remoteWriteSuffix = flag.String("prometheus.url.suffix", DefaultRemoteWriteEndpoint, "allows alternate remote write endpoints")
 }

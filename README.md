@@ -59,6 +59,12 @@ The following flags are accepted:
 * `--proxy.listen.port` Port to receive remote write requests, defaults to 3241
 * `--environment` Print environment setup script and exit
 * `--init` Print sample config file and exit
+* `--oidc.enabled` Enable authenticated requests
+* `--oidc.issuer` OIDC auth token issuer URL
+* `--oidc.clientId` OIDC client id
+* `--oidc.clientSecret` OIDC client secret
+* `--oidc.audience` OIDC audience
+* `--prometheus.url.suffix` Allow alternate remote write endpoints, in case your receiver uses a different endpoint than the default `/api/v1/write`
 
 # Config file format
 

@@ -21,6 +21,5 @@ func FromYaml(raw []byte) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return config, nil
 }
