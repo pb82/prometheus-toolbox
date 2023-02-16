@@ -9,12 +9,11 @@ import (
 	"github.com/pb82/prometheus-toolbox/pkg/timeseries"
 	"go.buf.build/protocolbuffers/go/prometheus/prometheus"
 	"log"
-	"net/url"
 	"sync"
 	"time"
 )
 
-func StartStreamWriters(ctx context.Context, config *api.Config, prometheusUrl *url.URL, wg *sync.WaitGroup) error {
+func StartStreamWriters(ctx context.Context, config *api.Config, rw *remotewrite.RemoteWriter, wg *sync.WaitGroup) error {
 	interval, err := time.ParseDuration(config.Interval)
 	if err != nil {
 		return err
@@ -54,7 +53,7 @@ func StartStreamWriters(ctx context.Context, config *api.Config, prometheusUrl *
 					wr := &prometheus.WriteRequest{}
 					wr.Timeseries = append(wr.Timeseries, &sendSeries)
 					log.Println(fmt.Sprintf("sending sample for timeseries %v: %v", ts.Series, nextValue))
-					err := remotewrite.SendWriteRequest(wr, prometheusUrl)
+					err := rw.SendWriteRequest(wr)
 					if err != nil {
 						log.Println(fmt.Sprintf("error sending sample: %v", err.Error()))
 					}
