@@ -16,6 +16,8 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"sort"
+	"strings"
 	"time"
 )
 
@@ -76,8 +78,19 @@ func NewRemoteWriter(prometheusUrl *url.URL) *RemoteWriter {
 	}
 }
 
+func sortLabels(wr *prometheus.WriteRequest) {
+	for _, ts := range wr.Timeseries {
+		sort.Slice(ts.Labels, func(i int, j int) bool {
+			return strings.Compare(ts.Labels[i].Name, ts.Labels[j].Name) < 0
+		})
+	}
+}
+
 // SendWriteRequest encodes and sends a write request to the given url
 func (s *RemoteWriter) SendWriteRequest(wr *prometheus.WriteRequest) error {
+	// labels must be sorted alphabetically by key
+	sortLabels(wr)
+
 	data, _ := proto.Marshal(wr)
 	encoded := snappy.Encode(nil, data)
 
@@ -98,16 +111,11 @@ func (s *RemoteWriter) SendWriteRequest(wr *prometheus.WriteRequest) error {
 
 	defer resp.Body.Close()
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		if resp.StatusCode == 400 {
-			// possibly duplicate data? we're not concerned about that
-			bytes, err := io.ReadAll(resp.Body)
-			if err != nil {
-				return errors.New(fmt.Sprintf("unexpected remote write status code %v", resp.StatusCode))
-			}
-			return errors.New(fmt.Sprintf("invalid remote write request: %v", string(bytes)))
+		bytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return errors.New(fmt.Sprintf("unexpected remote write status code %v", resp.StatusCode))
 		}
-
-		return errors.New(fmt.Sprintf("unexpected remote write status code %v", resp.StatusCode))
+		return errors.New(fmt.Sprintf("invalid remote write request, status code: %v, ressponse: %v", resp.StatusCode, string(bytes)))
 	}
 
 	return nil
