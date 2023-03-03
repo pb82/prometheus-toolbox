@@ -113,9 +113,12 @@ func (s *RemoteWriter) SendWriteRequest(wr *prometheus.WriteRequest) error {
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		bytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			return errors.New(fmt.Sprintf("unexpected remote write status code %v", resp.StatusCode))
+			return errors.New(fmt.Sprintf("unexpected remote write status code, error reading response body %v", resp.StatusCode))
 		}
-		return errors.New(fmt.Sprintf("invalid remote write request, status code: %v, ressponse: %v", resp.StatusCode, string(bytes)))
+		if len(bytes) > 0 {
+			return errors.New(fmt.Sprintf("invalid remote write request, status code: %v, response: %v", resp.StatusCode, string(bytes)))
+		}
+		return errors.New(fmt.Sprintf("invalid remote write request, status code: %v", resp.StatusCode))
 	}
 
 	return nil
