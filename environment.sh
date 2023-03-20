@@ -5,7 +5,6 @@ PROMETHEUS_NAME="prometheus_toolbox_prometheus"
 PROMETHEUS_PORT=9090
 
 GRAFANA_NAME="prometheus_toolbox_grafana"
-
 : "${GRAFANA_IMAGE:="docker.io/grafana/grafana-oss:latest"}"
 GRAFANA_PORT=3000
 
@@ -26,16 +25,30 @@ fi
 
 echo "detected runtime is $RUNTIME, starting containers. this can take some time..."
 
-# Creata a basic prometheus config file
-cat > prometheus.yml <<- EOF
-global:
-  scrape_interval: 10s
-  evaluation_interval: 30s
+if [ -f ./rules.yml ]; then
+  echo "prometheus rules file found, importing alerts"
+  # Creata a basic prometheus config file with alerting
+  cat > prometheus.yml <<- EOF
+  global:
+    scrape_interval: 10s
+    evaluation_interval: 30s
+  rule_files:
+    - ./rules.yml
 EOF
+  # start the prometheus container with mounted rules
+  echo "starting prometheus container from image $PROMETHEUS_IMAGE"
+  $RUNTIME run -d --rm --name $PROMETHEUS_NAME -p 9090:9090 $OPTS -v $(pwd)/rules.yml:/etc/prometheus/rules.yml -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml $PROMETHEUS_IMAGE --web.enable-remote-write-receiver --config.file=/etc/prometheus/prometheus.yml &> /dev/null
+else
+  cat > prometheus.yml <<- EOF
+  global:
+    scrape_interval: 10s
+    evaluation_interval: 30s
+EOF
+  # start the prometheus container
+  echo "starting prometheus container from image $PROMETHEUS_IMAGE"
+  $RUNTIME run -d --rm --name $PROMETHEUS_NAME -p 9090:9090 $OPTS -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml $PROMETHEUS_IMAGE --web.enable-remote-write-receiver --config.file=/etc/prometheus/prometheus.yml &> /dev/null
+fi
 
-# start the prometheus container
-echo "starting prometheus container from image $PROMETHEUS_IMAGE"
-$RUNTIME run -d --rm --name $PROMETHEUS_NAME -p 9090:9090 $OPTS -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml $PROMETHEUS_IMAGE --web.enable-remote-write-receiver --config.file=/etc/prometheus/prometheus.yml &> /dev/null
 PROMETHEUS_CONTAINER=`$RUNTIME ps -f name=$PROMETHEUS_NAME --format "{{.ID}}"`
 
 # start the grafana container
