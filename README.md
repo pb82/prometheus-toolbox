@@ -19,6 +19,16 @@ A specific version:
 
 `GOPROXY=direct go install github.com/pb82/prometheus-toolbox@<version>`
 
+*NOTE*: [Go](https://go.dev/) must be installed
+
+### Building locally
+
+Build directly for your platform with go:
+
+```shell
+$ go build
+```
+
 ## Starting a local development environment
 
 To start a local development environment including Prometheus and Grafana use the built-in `--environment` command.
