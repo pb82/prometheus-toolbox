@@ -46,6 +46,17 @@ The Prometheus and Grafana images can be overridden by exporting the `PROMETHEUS
 $ export GRAFANA_IMAGE=docker.io/grafana/grafana-oss:8.5.15 && ./prometheus-toolbox --environment | bash
 ```
 
+### Importing Prometheus rules into the local development environment
+
+The environment script checks for the presence of a file with the name `rules.yml` in the directory it's running.
+If present, Prometheus is configured to import [alerting](https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/) and [recording](https://prometheus.io/docs/prometheus/latest/configuration/recording_rules/) rules from it.
+
+A sample rules file can be generated with the following command:
+
+```shell
+$ prometheus-toolbox --rules > rules.yml
+```
+
 # Flags
 
 The following flags are accepted:
@@ -59,6 +70,7 @@ The following flags are accepted:
 * `--proxy.listen.port` Port to receive remote write requests, defaults to 3241
 * `--environment` Print environment setup script and exit
 * `--init` Print sample config file and exit
+* `--rules` Print sample alerting rules file and exit
 * `--oidc.enabled` Enable authenticated requests
 * `--oidc.issuer` OIDC auth token issuer URL
 * `--oidc.clientId` OIDC client id

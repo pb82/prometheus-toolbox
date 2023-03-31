@@ -27,7 +27,7 @@ echo "detected runtime is $RUNTIME, starting containers. this can take some time
 
 if [ -f ./rules.yml ]; then
   echo "prometheus rules file found, importing alerts"
-  # Creata a basic prometheus config file with alerting
+  # Create a basic prometheus config file with alerting
   cat > prometheus.yml <<- EOF
   global:
     scrape_interval: 10s
