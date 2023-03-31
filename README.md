@@ -7,7 +7,7 @@ It allows you to define time series and values and send them directly to Prometh
 
 I found this very useful for testing PromQL queries and alerts.
 Sometimes you don't have the right data in Prometheus or simply no access. 
-This tool let's you simulate the data you need and test your queries against it.
+This tool lets you simulate the data you need and test your queries against it.
 
 ## Installation
 
@@ -94,16 +94,16 @@ This tool reads from a config file where the simulated time series and values ar
 The format is:
 
 ```yaml
-interval: "10s"                   # Interval between samples, in this case 10 seconds
-time_series:                      # List of time series to simulate
-  - series: metric_a{label="a"}   # Time series (metric name and label list)
-    values: 1+1x100               # Precalculated samples
-  - series: metric_a{label="a"}   # Another time series
-    stream: 1+0                   # Realtime samples
-  - series: metric_b{label="a"}   # 
-    values: 1+1x50 50+0x50        # Multiple value sequences are possible
-  - series: metric_c{label="a"}   # 
-    values: _x50 1+0x50           # The underscore represents an empty value (no data received). Time still advances.    
+interval: "10s"                       # Interval between samples, in this case 10 seconds
+time_series:                          # List of time series to simulate
+  - series: metric_a{label="a"}       # Time series (metric name and label list)
+    values: 1+1x100                   # Precalculated samples
+  - series: metric_a{label="a"}       # Another time series
+    stream: 1+0                       # Realtime samples
+  - series: metric_b{label="a"}       # 
+    values: 1+1x50 50+0x50            # Multiple value sequences are possible
+  - series: metric_c{l1="a",l2="b"}   # Multiple labels are possible
+    values: _x50 1+0x50               # The underscore represents an empty value (no data received). Time still advances.    
 ```
 
 The format for precalculated samples is:
