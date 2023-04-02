@@ -7,7 +7,7 @@ It allows you to define time series and values and send them directly to Prometh
 
 I found this very useful for testing PromQL queries and alerts.
 Sometimes you don't have the right data in Prometheus or simply no access. 
-This tool let's you simulate the data you need and test your queries against it.
+This tool lets you simulate the data you need and test your queries against it.
 
 ## Installation
 
@@ -18,6 +18,16 @@ The latest version:
 A specific version:
 
 `GOPROXY=direct go install github.com/pb82/prometheus-toolbox@<version>`
+
+*NOTE*: [Go](https://go.dev/) must be installed
+
+### Building locally
+
+Build directly for your platform with go:
+
+```shell
+$ go build
+```
 
 ## Starting a local development environment
 
@@ -46,6 +56,17 @@ The Prometheus and Grafana images can be overridden by exporting the `PROMETHEUS
 $ export GRAFANA_IMAGE=docker.io/grafana/grafana-oss:8.5.15 && ./prometheus-toolbox --environment | bash
 ```
 
+### Importing Prometheus rules into the local development environment
+
+The environment script checks for the presence of a file with the name `rules.yml` in the directory it's running.
+If present, Prometheus is configured to import [alerting](https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/) and [recording](https://prometheus.io/docs/prometheus/latest/configuration/recording_rules/) rules from it.
+
+A sample rules file can be generated with the following command:
+
+```shell
+$ prometheus-toolbox --rules > rules.yml
+```
+
 # Flags
 
 The following flags are accepted:
@@ -59,6 +80,7 @@ The following flags are accepted:
 * `--proxy.listen.port` Port to receive remote write requests, defaults to 3241
 * `--environment` Print environment setup script and exit
 * `--init` Print sample config file and exit
+* `--rules` Print sample alerting rules file and exit
 * `--oidc.enabled` Enable authenticated requests
 * `--oidc.issuer` OIDC auth token issuer URL
 * `--oidc.clientId` OIDC client id
@@ -72,16 +94,16 @@ This tool reads from a config file where the simulated time series and values ar
 The format is:
 
 ```yaml
-interval: "10s"                   # Interval between samples, in this case 10 seconds
-time_series:                      # List of time series to simulate
-  - series: metric_a{label="a"}   # Time series (metric name and label list)
-    values: 1+1x100               # Precalculated samples
-  - series: metric_a{label="a"}   # Another time series
-    stream: 1+0                   # Realtime samples
-  - series: metric_b{label="a"}   # 
-    values: 1+1x50 50+0x50        # Multiple value sequences are possible
-  - series: metric_c{label="a"}   # 
-    values: _x50 1+0x50           # The underscore represents an empty value (no data received). Time still advances.    
+interval: "10s"                       # Interval between samples, in this case 10 seconds
+time_series:                          # List of time series to simulate
+  - series: metric_a{label="a"}       # Time series (metric name and label list)
+    values: 1+1x100                   # Precalculated samples
+  - series: metric_a{label="a"}       # Another time series
+    stream: 1+0                       # Realtime samples
+  - series: metric_b{label="a"}       # 
+    values: 1+1x50 50+0x50            # Multiple value sequences are possible
+  - series: metric_c{l1="a",l2="b"}   # Multiple labels are possible
+    values: _x50 1+0x50               # The underscore represents an empty value (no data received). Time still advances.    
 ```
 
 The format for precalculated samples is:

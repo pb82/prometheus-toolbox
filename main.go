@@ -43,6 +43,7 @@ var (
 	oidcAudience      *string
 	oidcEnabled       *bool
 	remoteWriteSuffix *string
+	rules             *bool
 )
 
 var (
@@ -51,24 +52,32 @@ var (
 
 	//go:embed config.yml
 	exampleConfig string
+
+	//go:embed rules.yml
+	exampleRules string
 )
 
 func main() {
 	flag.Parse()
 
-	if printVersion != nil && *printVersion {
+	if *printVersion {
 		fmt.Printf("Prometheus toolbox v%v", version.Version)
 		fmt.Println()
 		os.Exit(0)
 	}
 
-	if environment != nil && *environment {
+	if *environment {
 		fmt.Println(environmentSetupScript)
 		os.Exit(0)
 	}
 
-	if initialize != nil && *initialize {
+	if *initialize {
 		fmt.Println(exampleConfig)
+		os.Exit(0)
+	}
+
+	if *rules {
+		fmt.Println(exampleRules)
 		os.Exit(0)
 	}
 
@@ -84,7 +93,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if prometheusUrl == nil || *prometheusUrl == "" {
+	if *prometheusUrl == "" {
 		fmt.Println("missing prometheus base url, make sure to set --prometheus.url")
 		os.Exit(1)
 	}
@@ -167,4 +176,5 @@ func init() {
 	oidcAudience = flag.String("oidc.audience", "", "oidc audience")
 	oidcEnabled = flag.Bool("oidc.enabled", false, "enable oidc token authentication")
 	remoteWriteSuffix = flag.String("prometheus.url.suffix", DefaultRemoteWriteEndpoint, "allows alternate remote write endpoints")
+	rules = flag.Bool("rules", false, "print sample alerting rules file and exit")
 }

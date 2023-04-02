@@ -1,0 +1,10 @@
+groups:
+  - name: prometheus-toolbox-alerts
+    rules:
+      - alert: DeadMansSwitch
+        expr: vector(1)
+        labels:
+          severity: none
+        annotations:
+          summary: A Dead Man's Switch to ensure that alerting works
+      # Add your own alerting rules below
