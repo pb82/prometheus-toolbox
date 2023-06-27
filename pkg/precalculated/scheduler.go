@@ -14,7 +14,7 @@ import (
 func SchedulePrecalculatedRemoteWriteRequests(config *api.Config, batchSize int) ([]*prometheus.WriteRequest, int64, error) {
 	type generator struct {
 		ts  *prometheus.TimeSeries
-		seq *api.SequenceList
+		seq api.SequenceGenerator
 	}
 	var totalSamples int64
 	var generators []generator
@@ -84,7 +84,7 @@ func SchedulePrecalculatedRemoteWriteRequests(config *api.Config, batchSize int)
 		g := generators[iterations%len(generators)]
 		iterations += 1
 
-		valid, value, timestamp := g.seq.Next(interval)
+		valid, value, timestamp := g.seq.NextFor(interval)
 		if !valid {
 			continue
 		}

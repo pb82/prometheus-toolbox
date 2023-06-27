@@ -4,7 +4,7 @@ import (
 	"github.com/pb82/prometheus-toolbox/api"
 )
 
-func ScanAndParseSequence(source string) (*api.SequenceList, error) {
+func ScanAndParseSequence(source string) (api.SequenceGenerator, error) {
 	scanner := NewScanner(source)
 	scanner.Scan()
 
