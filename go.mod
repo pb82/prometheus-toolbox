@@ -8,7 +8,7 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/golang/snappy v0.0.4
 	github.com/prometheus/client_golang v1.14.0
-	go.buf.build/protocolbuffers/go/prometheus/prometheus v1.3.5
+	go.buf.build/protocolbuffers/go/prometheus/prometheus v1.3.8
 	golang.org/x/oauth2 v0.4.0
 )
 
