@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/ghodss/yaml v1.0.0
-	github.com/golang/protobuf v1.5.2
+	github.com/golang/protobuf v1.5.3
 	github.com/golang/snappy v0.0.4
 	github.com/prometheus/client_golang v1.14.0
 	go.buf.build/protocolbuffers/go/prometheus/prometheus v1.3.8
