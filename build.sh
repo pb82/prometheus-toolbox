@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-archs=(amd64)
+archs=(amd64 arm64)
 oses=(linux darwin)
 
 for arch in "${archs[@]}"
