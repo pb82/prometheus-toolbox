@@ -34,14 +34,19 @@ func (s *Sequence) Size() int64 {
 	return s.Times
 }
 
-func (s *SequenceList) Next(interval time.Duration) (bool, *float64, int64) {
+// Next not implemented for this type
+func (s *SequenceList) Next() float64 {
+	panic("Next not implemented for this type")
+}
+
+func (s *SequenceList) NextFor(interval time.Duration) (bool, *float64, int64) {
 	if s.index >= len(s.sequences) {
 		return false, nil, 0
 	}
 	valid, next := s.sequences[s.index].Next()
 	if !valid {
 		s.index += 1
-		return s.Next(interval)
+		return s.NextFor(interval)
 	}
 
 	ts := s.startTimestamp + (s.timesAlready * interval.Milliseconds())
@@ -53,7 +58,7 @@ func (s *SequenceList) AsIntArray(interval time.Duration) []int {
 	var result []int
 
 	for true {
-		valid, next, _ := s.Next(interval)
+		valid, next, _ := s.NextFor(interval)
 		if !valid {
 			break
 		}

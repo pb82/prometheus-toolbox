@@ -110,7 +110,7 @@ func (p *Parser) parseValueSequence() (*api.Sequence, error) {
 	return sequence, nil
 }
 
-func (p *Parser) ParseStream() (*api.Stream, error) {
+func (p *Parser) ParseStream() (api.SequenceGenerator, error) {
 	stream := &api.Stream{}
 	initial, err := p.Expect(TokenTypeNumber)
 	if err != nil {
