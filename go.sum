@@ -43,8 +43,8 @@ github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.8.0 h1:pSgiaMZlXftHpm5L7V1+rVB+AZJydKsMxsQBIJw4PKk=
 go.buf.build/protocolbuffers/go/gogo/protobuf v1.3.9 h1:Gem1ArgYzrhdAuaORVqtvkT4WGPRiwFLXpTgRn+QLC8=
 go.buf.build/protocolbuffers/go/gogo/protobuf v1.3.9/go.mod h1:i2gBbO3BPCoVRjhpYl5wkyH+sQ8aZyE+ELx44rJm2/E=
-go.buf.build/protocolbuffers/go/prometheus/prometheus v1.3.8 h1:2LntQlPZuEgucC8Phqnirpj150+k1rNeCzoF9tCTJX0=
-go.buf.build/protocolbuffers/go/prometheus/prometheus v1.3.8/go.mod h1:MscLIBPVmRlS3Z4XijKkiqzOiBQaRFi1PqWt7KAzf9o=
+go.buf.build/protocolbuffers/go/prometheus/prometheus v1.3.9 h1:rvgxIDVC6JD6uoKKWwEdPi/Dkxwm+0nq6iSKpOeiuDA=
+go.buf.build/protocolbuffers/go/prometheus/prometheus v1.3.9/go.mod h1:MscLIBPVmRlS3Z4XijKkiqzOiBQaRFi1PqWt7KAzf9o=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.10.0 h1:LKqV2xt9+kDzSTfOhx4FrkEBcMrAgHSYgzywV9zcGmM=
 golang.org/x/crypto v0.10.0/go.mod h1:o4eNf7Ede1fv+hwOwZsTHl9EsPFO6q6ZvYR8vYfY45I=
