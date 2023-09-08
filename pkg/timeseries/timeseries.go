@@ -1,6 +1,8 @@
 package timeseries
 
-import "go.buf.build/protocolbuffers/go/prometheus/prometheus"
+import (
+	prometheus "buf.build/gen/go/prometheus/prometheus/protocolbuffers/go"
+)
 
 func ScanAndParseTimeSeries(source string) (*prometheus.TimeSeries, error) {
 	scanner := NewScanner(source)

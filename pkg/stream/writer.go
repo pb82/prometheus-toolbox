@@ -3,14 +3,16 @@ package stream
 import (
 	"context"
 	"fmt"
+	"log"
+	"sync"
+	"time"
+
+	prometheus "buf.build/gen/go/prometheus/prometheus/protocolbuffers/go"
+
 	"github.com/pb82/prometheus-toolbox/api"
 	"github.com/pb82/prometheus-toolbox/pkg/remotewrite"
 	"github.com/pb82/prometheus-toolbox/pkg/sequence"
 	"github.com/pb82/prometheus-toolbox/pkg/timeseries"
-	"go.buf.build/protocolbuffers/go/prometheus/prometheus"
-	"log"
-	"sync"
-	"time"
 )
 
 func StartStreamWriters(ctx context.Context, config *api.Config, rw *remotewrite.RemoteWriter, wg *sync.WaitGroup) error {

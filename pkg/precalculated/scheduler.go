@@ -1,12 +1,14 @@
 package precalculated
 
 import (
+	"math"
+	"time"
+
+	prometheus "buf.build/gen/go/prometheus/prometheus/protocolbuffers/go"
+
 	"github.com/pb82/prometheus-toolbox/api"
 	sequence2 "github.com/pb82/prometheus-toolbox/pkg/sequence"
 	"github.com/pb82/prometheus-toolbox/pkg/timeseries"
-	"go.buf.build/protocolbuffers/go/prometheus/prometheus"
-	"math"
-	"time"
 )
 
 // SchedulePrecalculatedRemoteWriteRequests distribute samples to remote write requests so that no single request exceeds the batch size

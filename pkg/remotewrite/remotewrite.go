@@ -6,19 +6,21 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"github.com/coreos/go-oidc"
-	"github.com/golang/protobuf/proto"
-	"github.com/golang/snappy"
-	"github.com/pb82/prometheus-toolbox/internal"
-	"go.buf.build/protocolbuffers/go/prometheus/prometheus"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/clientcredentials"
 	"io"
 	"net/http"
 	"net/url"
 	"sort"
 	"strings"
 	"time"
+
+	prometheus "buf.build/gen/go/prometheus/prometheus/protocolbuffers/go"
+	"github.com/coreos/go-oidc"
+	"github.com/golang/protobuf/proto"
+	"github.com/golang/snappy"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/clientcredentials"
+
+	"github.com/pb82/prometheus-toolbox/internal"
 )
 
 const (

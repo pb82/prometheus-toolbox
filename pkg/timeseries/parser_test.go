@@ -1,9 +1,10 @@
 package timeseries
 
 import (
-	"go.buf.build/protocolbuffers/go/prometheus/prometheus"
 	"reflect"
 	"testing"
+
+	prometheus "buf.build/gen/go/prometheus/prometheus/protocolbuffers/go"
 )
 
 func TestParser(t *testing.T) {
