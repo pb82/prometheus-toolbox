@@ -3,7 +3,9 @@ package timeseries
 import (
 	"errors"
 	"fmt"
-	"go.buf.build/protocolbuffers/go/prometheus/prometheus"
+
+	prometheus "buf.build/gen/go/prometheus/prometheus/protocolbuffers/go"
+
 	"github.com/pb82/prometheus-toolbox/pkg/parser"
 )
 

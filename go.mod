@@ -3,16 +3,17 @@ module github.com/pb82/prometheus-toolbox
 go 1.19
 
 require (
+	buf.build/gen/go/prometheus/prometheus/protocolbuffers/go v1.31.0-20230726221845-41588ce133c8.1
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/golang/protobuf v1.5.3
 	github.com/golang/snappy v0.0.4
 	github.com/prometheus/client_golang v1.16.0
-	go.buf.build/protocolbuffers/go/prometheus/prometheus v1.3.9
 	golang.org/x/oauth2 v0.10.0
 )
 
 require (
+	buf.build/gen/go/gogo/protobuf/protocolbuffers/go v1.31.0-20220704150332-5461a3dfa9d9.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
@@ -22,7 +23,6 @@ require (
 	github.com/prometheus/common v0.42.0 // indirect
 	github.com/prometheus/procfs v0.10.1 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
-	go.buf.build/protocolbuffers/go/gogo/protobuf v1.3.9 // indirect
 	golang.org/x/crypto v0.11.0 // indirect
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/sys v0.10.0 // indirect
