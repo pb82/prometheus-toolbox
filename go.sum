@@ -1,8 +1,8 @@
-buf.build/gen/go/gogo/protobuf/protocolbuffers/go v1.31.0-20210810001428-4df00b267f94.1/go.mod h1:Az9fvKFYQGtiDa7cPW9T3Nbw8u3hpmD6wG15RsbQlA0=
+buf.build/gen/go/gogo/protobuf/protocolbuffers/go v1.31.0-20210810001428-4df00b267f94.2/go.mod h1:Az9fvKFYQGtiDa7cPW9T3Nbw8u3hpmD6wG15RsbQlA0=
 buf.build/gen/go/gogo/protobuf/protocolbuffers/go v1.31.0-20220704150332-5461a3dfa9d9.1 h1:34sIIPKGBP4706kxshuWJFRAVCXfDCii+ShwtVgb5kM=
 buf.build/gen/go/gogo/protobuf/protocolbuffers/go v1.31.0-20220704150332-5461a3dfa9d9.1/go.mod h1:Az9fvKFYQGtiDa7cPW9T3Nbw8u3hpmD6wG15RsbQlA0=
-buf.build/gen/go/prometheus/prometheus/protocolbuffers/go v1.31.0-20231019191021-98a368fa6cc9.1 h1:C9nCboMPhOxhQvsCmtscItUXJTc6/4620iSzQfsaf6I=
-buf.build/gen/go/prometheus/prometheus/protocolbuffers/go v1.31.0-20231019191021-98a368fa6cc9.1/go.mod h1:iqW5nSujn3ZJ9ISZQX3K/uWwjckAp8hz0J4/wNgFBZo=
+buf.build/gen/go/prometheus/prometheus/protocolbuffers/go v1.31.0-20231130093556-2941f2455274.2 h1:XJ0P0+Dx7cMEV523NKnRJkkvnzrfUCzemxjQFfwG5W4=
+buf.build/gen/go/prometheus/prometheus/protocolbuffers/go v1.31.0-20231130093556-2941f2455274.2/go.mod h1:i2Q4jyRQg+imfokxn3tgvtZmCqupvi5sjn9B14XAaCA=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
 github.com/cespare/xxhash/v2 v2.2.0 h1:DC2CZ1Ep5Y4k3ZQ899DldepgrayRUGE6BBZ/cd9Cj44=
