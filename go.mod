@@ -3,7 +3,7 @@ module github.com/pb82/prometheus-toolbox
 go 1.19
 
 require (
-	buf.build/gen/go/prometheus/prometheus/protocolbuffers/go v1.31.0-20231130093556-2941f2455274.2
+	buf.build/gen/go/prometheus/prometheus/protocolbuffers/go v1.31.0-20231207162955-1b7052ef4ec4.2
 	github.com/coreos/go-oidc v2.2.1+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/golang/protobuf v1.5.3
